@@ -9,10 +9,10 @@
 | Tema | Decisión |
 |---|---|
 | Framework | Vite + React SPA (sin SSR) |
-| Seguir | Diario privado → solicitud que el dueño aprueba. Diario público → seguimiento inmediato |
+| Seguir | **Siempre solicitud que aprueba el dueño** (diario público o privado; antes un público aceptaba al instante) |
 | Login | **Solo Google** (sin email/contraseña ni Apple) |
 | Diarios | Uno por usuario: perfil = diario |
-| Cocinar con alguien | Etiquetar participantes: autor único, el etiquetado acepta y puede salirse |
+| Cocinar con alguien | Etiquetar participantes («¿Con quién lo cocinaste?»): autor único, solo quien escribe edita; el etiquetado acepta y puede salirse |
 | Nombre | **Cuines** |
 | Hosting | GitHub Pages en la cuenta **personal `marsolermendez`** (no la de Hike): gratis, URL fea (`marsolermendez.github.io/cuines`), sin dominio propio |
 | Tono visual | Fotos protagonistas **y mucho texto** (relatos largos, estilo Polarsteps) |
@@ -80,7 +80,7 @@
 
 **`entry_participants`** — PK `(entry_id, user_id)`, `status` (`pending|accepted`). Solo sobre entradas `published`. El autor invita y puede quitar; el invitado acepta o se borra a sí mismo.
 
-**`follows`** — PK `(follower_id, followee_id)`, `status` (`pending|accepted`), `CHECK follower <> followee`. Un trigger `BEFORE INSERT` fija `status` según `followee.is_private` (el cliente no puede autoaceptarse); solo el seguido puede actualizar `status` (`GRANT UPDATE (status)`). Al pasar un perfil a público se aceptan las pendientes.
+**`follows`** — PK `(follower_id, followee_id)`, `status` (`pending|accepted`), `CHECK follower <> followee`. Un trigger `BEFORE INSERT` fija `status = 'pending'` (el cliente no puede autoaceptarse); solo el seguido puede actualizar `status` (`GRANT UPDATE (status)`). Hacerse público no aprueba las pendientes.
 
 **`likes`** — PK `(entry_id, user_id)`. **`comments`** — `id`, `entry_id`, `author_id`, `body` (1–1000), `created_at`.
 
@@ -147,7 +147,7 @@ Móvil: barra inferior con 5 pestañas. Escritorio: misma navegación en barra l
 
 **Guardar de otros:** botón en `/r/:id` (y en la tarjeta de receta de cada entrada) → RPC `save_as_draft(recipe_id)` → aviso "Guardada en Quiero cocinar" (con deshacer). El borrador **enlaza** la misma receta (no se copia nada) y, cuando la cocines, cuenta en sus contadores. No viajan fotos ni relato.
 
-**Cocinar con alguien:** campo "¿Con quién?" en el formulario (busca `username`). El invitado ve la solicitud en `/settings`; al aceptar, la entrada aparece en su diario y recetario como solo lectura con "con @autor". No aparece en el feed de sus seguidores (el feed solo trae entradas por autor).
+**Cocinar con alguien:** sección "¿Con quién lo cocinaste?" del formulario, justo debajo del relato (busca `username`); solo la autora edita. El invitado ve la solicitud en `/settings`; al aceptar, la entrada aparece en su diario y recetario como solo lectura con "con @autor". No aparece en el feed de sus seguidores (el feed solo trae entradas por autor).
 
 **Estética y tono "Polarsteps": foto + relato.** Tema oscuro verde pino (fondo `#0C1F19`, tarjetas `#153028`), acento tomate `#FF7A5C`, texto hueso `#F4EFE3`, tipografía Sora y buena medida de lectura (~65 caracteres, interlineado amplio). Logo: olla con tapa y llamas. Tokens de color en variables CSS del tema de Tailwind (los nombres `cream`, `paper` y `clay` se conservan aunque ya no describan el color).
 - **Entrada = una historia:** título y fecha, mosaico de fotos a sangre y debajo el relato completo en párrafos, seguido de una tarjeta de receta (enlazada, con sus contadores) y comentarios. Editor de texto que crece solo; el relato es tan importante como la foto.
@@ -213,7 +213,7 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 | **1** | Login solo con Google, onboarding, perfil, avatar, `is_private`; RLS de `profiles` | Entrar con Google (credenciales OAuth propias en `supabase/.env`), elegir username, cambiar avatar; un 2.º usuario no puede editar mi perfil |
 | **2** | **Diario**: crear/editar/borrar entradas publicadas con fotos (pipeline completo), **receta nueva** (tabla `recipes` desde el día uno) y visibilidad; timeline por días **y vista calendario mensual**; RLS de `recipes`, `entries`, `entry_photos`, Storage; **suite pgTAP v1** | Publicar entrada con 3 fotos y verla en la línea temporal y como día resaltado en el calendario (tocarlo la lista; dos entradas el mismo día muestran contador; en el diario de otra cuenta no se resalta un día que solo tiene entradas privadas); pesos de red ≤ ~300 KB/foto; otro usuario no accede a una foto privada (ni por URL firmada de otro) |
 | **3** | **Borradores**: Quiero cocinar (etiquetas, búsqueda, orden, fecha prevista), **Cocinar ahora**, guardar para después | Un borrador no sale en `/u/:username` ni en consultas de otro usuario (SQL y navegador); la conversión conserva receta y fotos |
-| **4** | **Social**: seguir (con aprobación en privados), feed, perfiles públicos, likes, comentarios, reportar y borrar; pgTAP ampliada | Dos navegadores con dos cuentas: solicitud pendiente → aceptada → aparece en el feed; comentario reportado crea fila en `reports` |
+| **4** | **Social**: seguir (siempre con aprobación), feed, perfiles públicos, likes, comentarios, reportar y borrar; pgTAP ampliada | Dos navegadores con dos cuentas: solicitud pendiente → aceptada → aparece en el feed; comentario reportado crea fila en `reports` |
 | **5** | **Recetas con identidad**: página `/r/:id`, **Cocinar otra vez**, selector "una que ya tengo", contadores (`recipe_stats`), **recetario** agrupado, **guardar de otros como borrador**; y **cocinar con alguien** | Cocino la misma receta 3 días con relatos distintos y sale una sola vez en el recetario con "×3"; B guarda mi receta y la cocina: la receta marca "2 personas"; C no cuenta entradas privadas ni puede guardar una receta que no ve; A etiqueta a B, B acepta y la ve en su diario (solo lectura) y se puede salir |
 | **6** | Pulido y despliegue: skeletons, estados vacíos, errores, revisión a 375/768/1280 px, accesibilidad básica (alt, foco), Supabase cloud, repo y Pages con **Terraform** (`infra/`), Google OAuth en producción, deploy a GitHub Pages | URL `github.io` pública; recorrido completo en móvil y escritorio |
 
@@ -280,7 +280,7 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 
 **Fase 4**
 - **`is_follower` deja de ser un stub:** `create or replace` lo implementa con la tabla `follows` (solo cuentan los seguimientos aceptados). Con eso «solo seguidores» y las entradas públicas de diarios privados funcionan sin tocar `can_read_entry` ni ninguna política de la Fase 2.
-- **El estado de un seguimiento lo decide el servidor** (trigger `BEFORE INSERT`): pendiente si el diario es privado, aceptado si no. El cliente no puede escribir `status` al insertar. Solo la persona seguida lo cambia, y solo a `accepted`; rechazar o dejar de seguir es borrar la fila. Al pasar un diario a público se aceptan las solicitudes pendientes (trigger en `profiles`).
+- **El estado de un seguimiento lo decide el servidor** (trigger `BEFORE INSERT`): siempre pendiente, sea el diario público o privado. El cliente no puede escribir `status` al insertar. Solo la persona seguida lo cambia, y solo a `accepted`; rechazar o dejar de seguir es borrar la fila. `is_private` solo decide si las entradas `public` las lee cualquiera o solo quien te sigue; hacerse público no aprueba solicitudes pendientes.
 - **`follows` solo lo leen las dos partes**, así que no hay contadores de seguidores en el perfil (no se filtra el grafo social). Quien busca personas ve nombre y @usuario de cualquiera, también de diarios privados: es lo que permite solicitar seguirlos.
 - **Likes y comentarios heredan la privacidad de la entrada** (la subconsulta pasa por la RLS de `entries`); los borradores no admiten ninguno. Los comentarios no se editan. Borra quien lo escribió o la autora de la entrada.
 - **Reportes:** cada persona solo ve los suyos; la revisión se hace desde el panel de Supabase (no hay pantalla de moderación). Si el comentario se borra, su reporte se va con él (`on delete cascade`). No hay bloqueo de usuarios.

@@ -186,6 +186,8 @@ function EntryFormBody({ existing, preset }: { existing?: Loaded; preset?: Linke
         </label>
       </section>
 
+      <ParticipantsField value={people} onChange={setPeople} pending={pendingIds} />
+
       {existing ? (
         recipeIsMine ? (
           <RecipeFields value={recipe} onChange={setRecipe} />
@@ -215,8 +217,6 @@ function EntryFormBody({ existing, preset }: { existing?: Loaded; preset?: Linke
           )}
         </section>
       )}
-
-      <ParticipantsField value={people} onChange={setPeople} pending={pendingIds} />
 
       <fieldset className="grid gap-2">
         <legend className="mb-1 text-sm font-medium">¿Quién puede verla?</legend>

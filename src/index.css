@@ -30,6 +30,15 @@
   outline-offset: 2px;
 }
 
+/* Una `grid` sin columnas explícitas usa una columna `auto`, que crece hasta el texto sin partir de sus hijos
+   (títulos con `truncate`) y ensancha la página en móvil. Con minmax(0, 1fr) la columna nunca pasa del contenedor;
+   `grid-cols-*` sigue mandando porque las utilidades van después de la capa base. */
+@layer base {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 body {
   background: var(--color-cream);
   color: var(--color-ink);

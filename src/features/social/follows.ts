@@ -65,7 +65,7 @@ export function useToggleFollow(targetId: string) {
   })
 }
 
-/** Solicitudes pendientes de personas que quieren seguirme (mi diario es privado). */
+/** Solicitudes pendientes de personas que quieren seguirme: toda solicitud espera mi aprobación. */
 export function useFollowRequests() {
   const uid = useSession().session?.user.id
   return useQuery({

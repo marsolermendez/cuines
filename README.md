@@ -96,7 +96,7 @@ curl -X POST "$VITE_SUPABASE_URL/auth/v1/signup" -H "apikey: $VITE_SUPABASE_ANON
 | `npm run db:start` | Arranca Supabase local (Docker) |
 | `npm run db:reset` | Recrea la base local con migraciones y `seed.sql` |
 | `npm run db:types` | Regenera `src/lib/database.types.ts` desde la base local |
-| `npm run db:test` | Ejecuta los tests pgTAP de privacidad (217, con una matriz de actores) |
+| `npm run db:test` | Ejecuta los tests pgTAP de privacidad (221, con una matriz de actores) |
 
 ## Despliegue en GitHub Pages
 
