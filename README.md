@@ -84,4 +84,4 @@ docs/           plan del MVP
 
 ## Estado
 
-Fases 0 a 2 hechas: esqueleto, login con Google, y diario con fotos, recetas, línea temporal y calendario mensual. Siguiente: Fase 3, borradores («Quiero cocinar»). Fases en [docs/plan.md](docs/plan.md#7-fases-cada-una-termina-en-algo-probable).
+Fases 0 a 3 hechas: esqueleto, login con Google, diario con fotos, recetas, línea temporal y calendario mensual, y borradores («Quiero cocinar», con «Cocinar ahora»). Siguiente: Fase 4, seguir a otras personas, feed, likes y comentarios. Fases en [docs/plan.md](docs/plan.md#7-fases-cada-una-termina-en-algo-probable).

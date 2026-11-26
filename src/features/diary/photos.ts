@@ -32,6 +32,17 @@ async function processPhoto(file: File) {
   }
 }
 
+/** Una foto ya guardada de una entrada. */
+export type ExistingPhoto = {
+  id: string
+  position: number
+  path: string
+  thumb_path: string
+  placeholder: string
+  width: number
+  height: number
+}
+
 export type NewPhotoRow = {
   entry_id: string
   position: number

@@ -10,14 +10,16 @@ export const profileFormSchema = z.object({
   bio: z.string().trim().max(280, 'Máximo 280 caracteres'),
 })
 
-const lines = (s: string) => s.split('\n').map((l) => l.trim()).filter(Boolean)
+const lines = (s: string) =>
+  s
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
 
-// Mismos límites que los CHECK de recipes y entries en la base de datos.
-export const entryFormSchema = z.object({
-  title: z.string().trim().min(1, 'Ponle un título a la entrada').max(120, 'Título: máximo 120 caracteres'),
-  cooked_on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Elige el día en que lo cocinaste'),
-  body: z.string().max(20000, 'El relato admite hasta 20 000 caracteres'),
-  visibility: z.enum(['public', 'followers', 'private']),
+const isDay = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v)
+
+// La receta (mismos límites que los CHECK de recipes en la base de datos). Es común a entradas y borradores.
+const recipeShape = {
   recipe_title: z.string().trim().min(1, 'Ponle nombre a la receta').max(120, 'Receta: máximo 120 caracteres'),
   ingredients: z
     .string()
@@ -42,4 +44,35 @@ export const entryFormSchema = z.object({
     .trim()
     .max(500)
     .refine((u) => u === '' || /^https?:\/\//.test(u), 'El enlace tiene que empezar por http:// o https://'),
+}
+
+type RecipeInput = { ingredients: string[]; steps: string[]; source_url: string }
+
+// Una receta que se guarda para cocinar más tarde tiene que decir cómo se hace, por escrito o con un enlace.
+const hasRecipeContent = (d: RecipeInput) => d.ingredients.length > 0 || d.steps.length > 0 || d.source_url !== ''
+const recipeContentError = { message: 'Añade ingredientes y pasos, o un enlace a la receta', path: ['ingredients'] }
+
+export const entryFormSchema = z.object({
+  title: z.string().trim().min(1, 'Ponle un título a la entrada').max(120, 'Título: máximo 120 caracteres'),
+  cooked_on: z.string().refine(isDay, 'Elige el día en que lo cocinaste'),
+  body: z.string().max(20000, 'El relato admite hasta 20 000 caracteres'),
+  visibility: z.enum(['public', 'followers', 'private']),
+  ...recipeShape,
 })
+
+/** Solo la receta: «Guardar en Quiero cocinar» desde el formulario de entrada. */
+export const recipeDraftSchema = z.object(recipeShape).refine(hasRecipeContent, recipeContentError)
+
+const parseTags = (s: string) => [...new Set(s.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean))]
+
+export const draftFormSchema = z
+  .object({
+    body: z.string().max(20000, 'Las notas admiten hasta 20 000 caracteres'),
+    tags: z
+      .string()
+      .transform(parseTags)
+      .pipe(z.array(z.string().max(30, 'Cada etiqueta, máximo 30 caracteres')).max(10, 'Máximo 10 etiquetas')),
+    planned_for: z.string().refine((v) => v === '' || isDay(v), 'Fecha prevista no válida'),
+    ...recipeShape,
+  })
+  .refine(hasRecipeContent, recipeContentError)

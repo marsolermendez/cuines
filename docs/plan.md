@@ -269,3 +269,12 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **La caché de TanStack Query se vacía al cambiar de usuario** (`AuthProvider`): no distingue quién mira y enseñaba datos de la sesión anterior.
 - **Sin reordenar fotos ni visor a pantalla completa** (se quitan y se añaden; la miniatura abre la foto completa en otra pestaña). El selector «una que ya tengo» llega en la Fase 5.
 
+**Fase 3**
+- **Casi sin cambios de modelo:** la Fase 2 ya dejó listo `status = 'draft'`, el CHECK de privacidad, `tags`, `position` y `planned_for`. Solo se añade un índice para listar borradores en orden manual.
+- **«Cocinar ahora» es un `UPDATE` de la misma fila** (conserva id, receta, fotos y etiquetas). Al publicar se pone `planned_for = null`, porque el CHECK lo exige. Nada se escribe hasta pulsar Publicar: si cancelas, sigue siendo borrador.
+- **Un borrador necesita decir cómo se hace la receta** (ingredientes, pasos o enlace), como pedía el plan; una entrada publicada solo exige el nombre.
+- **«Guardar en Quiero cocinar»** desde el formulario de entrada crea un borrador solo con la receta (sin relato ni fotos).
+- **Búsqueda, etiquetas y orden se hacen en el cliente** (sin tildes ni mayúsculas). Reordenar a mano intercambia `position` con la vecina (dos `UPDATE`, no atómicos) y solo se permite viendo la lista entera.
+- **Un solo camino de escritura:** `saveEntry` (receta + entrada + fotos, con deshacer si falla) y `deleteEntry` los usan el formulario de entrada, el de borrador, «Guardar en Quiero cocinar» y las dos pantallas de borrado.
+- Un borrador abierto como entrada (`/e/:id`) redirige a `/draft/:id`; un borrador no se lee como historia.
+

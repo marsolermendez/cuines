@@ -1,15 +1,15 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { ExternalLink } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '../../components/Avatar'
 import ProgressiveImage from '../../components/ProgressiveImage'
 import { btnSecondary } from '../../components/ui'
 import { formatDay } from '../../lib/dates'
-import { supabase } from '../../lib/supabase'
 import { useMe } from '../auth/profiles'
-import { removePhotoFiles, useSignedUrls } from './photos'
+import { useSignedUrls } from './photos'
 import { useEntry } from './queries'
+import { deleteEntry } from './save'
 import { visibilityInfo } from './visibility'
 
 export default function EntryPage() {
@@ -27,6 +27,8 @@ export default function EntryPage() {
   if (isError) return <p>No se pudo cargar la entrada.</p>
   // La RLS no distingue "no existe" de "no puedes verla": para quien mira es lo mismo.
   if (!entry) return <p>Esta entrada no existe o no puedes verla.</p>
+  // Un borrador no es una entrada que se lea: se gestiona en Quiero cocinar.
+  if (entry.status === 'draft') return <Navigate to={`/draft/${entry.id}`} replace />
 
   const mine = entry.author_id === me.id
   const recipe = entry.recipes
@@ -39,13 +41,7 @@ export default function EntryPage() {
     setDeleting(true)
     setError(null)
     try {
-      const { error } = await supabase.from('entries').delete().eq('id', entry.id)
-      if (error) throw error
-      // Primero las filas y luego los archivos: si algo falla a medias queda un archivo huérfano que nadie lee,
-      // en vez de una foto rota en el diario.
-      await removePhotoFiles(photos.flatMap((p) => [p.path, p.thumb_path]))
-      // La receta solo se borra si nadie más la usa (la base de datos rechaza el borrado si tiene entradas).
-      if (recipe) await supabase.from('recipes').delete().eq('id', recipe.id)
+      await deleteEntry(entry.id, recipe?.id ?? null)
       await queryClient.invalidateQueries({ queryKey: ['diary'] })
       navigate(`/u/${me.username}`, { replace: true })
     } catch {

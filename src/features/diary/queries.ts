@@ -70,3 +70,27 @@ export function useEntry(id: string | undefined) {
     },
   })
 }
+
+export type EntryData = NonNullable<ReturnType<typeof useEntry>['data']>
+export type RecipeData = NonNullable<EntryData['recipes']>
+/** Una entrada con su receta cargada (una entrada propia siempre ve la suya). */
+export type Loaded = EntryData & { recipes: RecipeData }
+export const hasRecipe = (e: EntryData): e is Loaded => !!e.recipes
+
+/** Mis borradores con la foto de portada. Solo los míos: la RLS no deja leer los de nadie más. */
+export function useDrafts(authorId: string) {
+  return useQuery({
+    queryKey: ['diary', 'drafts', authorId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('entries')
+        .select('id, body, tags, planned_for, position, created_at, recipes(id, title), entry_photos(position, thumb_path, placeholder, width, height)')
+        .eq('author_id', authorId)
+        .eq('status', 'draft')
+        .order('position', { referencedTable: 'entry_photos' })
+        .limit(1, { referencedTable: 'entry_photos' })
+      if (error) throw error
+      return data
+    },
+  })
+}
