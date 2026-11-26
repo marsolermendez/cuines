@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import ErrorState from '../../components/ErrorState'
+import Loading from '../../components/Loading'
 import { inputCls } from '../../components/ui'
 import { formatDay } from '../../lib/dates'
 import { norm } from '../../lib/text'
@@ -14,12 +16,12 @@ const SORTS: [Sort, string][] = [
 
 /** Las recetas de un diario sin repetir: cuántas veces se han cocinado y la última. Sale de las mismas entradas. */
 export default function Recipebook({ ownerId }: { ownerId: string }) {
-  const { data, isPending, isError } = useRecipebook(ownerId)
+  const { data, isPending, isError, refetch } = useRecipebook(ownerId)
   const [q, setQ] = useState('')
   const [sort, setSort] = useState<Sort>('last')
 
-  if (isPending) return <p className="text-ink-soft">Cargando…</p>
-  if (isError) return <p>No se pudo cargar el recetario.</p>
+  if (isPending) return <Loading cards={1} />
+  if (isError) return <ErrorState message="No se pudo cargar el recetario." onRetry={() => refetch()} />
 
   // `data` llega de la más reciente a la más antigua: la primera fila de cada receta es su última vez.
   const groups = new Map<string, { id: string; title: string; times: number; last: string }>()

@@ -300,3 +300,11 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **Recetario con techo de 1000 filas** (límite de PostgREST); con más veces cocinadas habría que agrupar en SQL.
 - Textos de la interfaz sin género (por ejemplo «Te etiquetaron…», «Te damos la bienvenida…»).
 
+**Fase 6**
+- **Bundle por rutas:** cada pantalla es un archivo (`React.lazy`) y las librerías van en tres archivos aparte (`react`, `supabase`, `vendor`) para que el navegador las reutilice tras cada despliegue. De 681 kB a 16 kB de código de la app. Si una pestaña abierta pide un archivo con nombre antiguo tras un despliegue, `ErrorBoundary` lo detecta y pide recargar en vez de dejar la pantalla en blanco.
+- **Acciones de GitHub fuera de Node 20** (`checkout@v7`, `setup-node@v7`, `upload-pages-artifact@v5`, `deploy-pages@v5`).
+- **Estados:** esqueletos de carga donde irán las tarjetas, errores con «Reintentar», 404 con salida y título de pestaña por pantalla.
+- **Accesibilidad:** anillo de foco visible global, borde de campos a 3:1, texto de acento a contraste AA (`clay` en lugar de `clay-soft` para texto), «Saltar al contenido» (un botón, no un enlace `#…`: con `HashRouter` cambiaría la ruta), zonas táctiles de ≥ 40 px y `aria-label` en la navegación.
+- **Revisión a 375, 768 y 1280 px:** sin desbordes horizontales en las 14 pantallas a 375 px; la barra lateral aparece desde 768 px y la lectura se queda en 680 px.
+- **Endurecimiento de producción:** auditoría directa de la base de datos (RLS en todas las tablas, `anon` sin privilegios, vista `security_invoker`, bucket `photos` privado). Se cierra la función `rls_auto_enable` que crea el panel de Supabase, invocable por `anon`, y se revoca EXECUTE de las funciones de disparador propias.
+

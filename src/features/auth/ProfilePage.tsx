@@ -1,6 +1,9 @@
 import { Lock } from 'lucide-react'
 import { NavLink, useParams } from 'react-router-dom'
 import Avatar from '../../components/Avatar'
+import ErrorState from '../../components/ErrorState'
+import Loading from '../../components/Loading'
+import { useTitle } from '../../lib/useTitle'
 import Calendar from '../diary/Calendar'
 import Recipebook from '../diary/Recipebook'
 import Timeline from '../diary/Timeline'
@@ -15,13 +18,14 @@ const tab = ({ isActive }: { isActive: boolean }) =>
 export default function ProfilePage({ view }: { view: 'timeline' | 'calendar' | 'recipes' }) {
   const { username } = useParams()
   const me = useMe()
-  const { data: profile, isPending, isError } = useProfileByUsername(username)
+  const { data: profile, isPending, isError, refetch } = useProfileByUsername(username)
+  useTitle(profile?.display_name)
   // Mi relación con esta persona; en mi propio perfil no hay nada que preguntar.
   const otherId = profile && profile.id !== me.id ? profile.id : undefined
   const { data: follow, isPending: followPending } = useFollowStatus(otherId)
 
-  if (isPending) return <p className="text-ink-soft">Cargando…</p>
-  if (isError) return <p>No se pudo cargar este perfil.</p>
+  if (isPending) return <Loading />
+  if (isError) return <ErrorState message="No se pudo cargar este perfil." onRetry={() => refetch()} />
   if (!profile) return <p>No existe ningún diario con ese nombre.</p>
 
   // Un diario privado solo se ve si te han aceptado. La base de datos ya no devolvería nada: esto solo lo explica.
@@ -30,7 +34,7 @@ export default function ProfilePage({ view }: { view: 'timeline' | 'calendar' | 
   return (
     <div>
       <header className="flex items-center gap-4">
-        <Avatar profile={profile} className="size-20" />
+        <Avatar profile={profile} className="size-16 sm:size-20" />
         <div className="min-w-0 flex-1">
           <h2 className="font-serif text-2xl font-medium">{profile.display_name}</h2>
           <p className="flex items-center gap-1 text-sm text-ink-soft">
@@ -43,7 +47,9 @@ export default function ProfilePage({ view }: { view: 'timeline' | 'calendar' | 
       {profile.bio && <p className="mt-4 whitespace-pre-line">{profile.bio}</p>}
 
       {otherId && followPending ? (
-        <p className="mt-8 text-ink-soft">Cargando…</p>
+        <div className="mt-8">
+          <Loading cards={1} />
+        </div>
       ) : locked ? (
         <div className="mt-8 rounded-xl border border-dashed border-line p-8 text-center">
           <Lock className="mx-auto size-6 text-ink-soft" aria-hidden="true" />

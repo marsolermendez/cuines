@@ -2,6 +2,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '../../components/Avatar'
+import ErrorState from '../../components/ErrorState'
+import Loading from '../../components/Loading'
+import { useTitle } from '../../lib/useTitle'
 import ProgressiveImage from '../../components/ProgressiveImage'
 import { btnPrimary, btnSecondary } from '../../components/ui'
 import { formatDay } from '../../lib/dates'
@@ -20,7 +23,8 @@ export default function EntryPage() {
   const me = useMe()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: entry, isPending, isError } = useEntry(id)
+  const { data: entry, isPending, isError, refetch } = useEntry(id)
+  useTitle(entry?.title)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const photos = entry?.entry_photos ?? []
@@ -29,8 +33,8 @@ export default function EntryPage() {
   const answer = useAnswerParticipation()
   const notice = (useLocation().state as { notice?: string } | null)?.notice
 
-  if (isPending) return <p className="text-ink-soft">Cargando…</p>
-  if (isError) return <p>No se pudo cargar la entrada.</p>
+  if (isPending) return <Loading cards={1} />
+  if (isError) return <ErrorState message="No se pudo cargar la entrada." onRetry={() => refetch()} />
   // La RLS no distingue "no existe" de "no puedes verla": para quien mira es lo mismo.
   if (!entry) return <p>Esta entrada no existe o no puedes verla.</p>
   // Un borrador no es una entrada que se lea: se gestiona en Quiero cocinar.

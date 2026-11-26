@@ -75,7 +75,7 @@ export default function EntryCard({ entry, urls, showVisibility, sharedBy, autho
           </Link>
         </h3>
         {entry.recipes && (
-          <p className="mt-1 flex items-center gap-1 text-sm text-clay-soft">
+          <p className="mt-1 flex items-center gap-1 text-sm text-clay">
             <UtensilsCrossed className="size-3.5" aria-hidden="true" />
             {entry.recipes.title}
           </p>
@@ -85,7 +85,7 @@ export default function EntryCard({ entry, urls, showVisibility, sharedBy, autho
       {social && (
         <footer className="relative z-10 flex items-center gap-4 px-4 pb-3">
           <LikeButton entryId={entry.id} initialLiked={social.liked} initialCount={social.likes} />
-          <Link to={`/e/${entry.id}#comentarios`} className="inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink" aria-label={`${social.comments} comentarios`}>
+          <Link to={`/e/${entry.id}#comentarios`} className="inline-flex min-h-10 items-center gap-1.5 text-sm text-ink-soft hover:text-ink" aria-label={`${social.comments} comentarios`}>
             <MessageCircle className="size-5" aria-hidden="true" />
             {social.comments}
           </Link>

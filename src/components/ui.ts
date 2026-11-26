@@ -5,4 +5,4 @@ const btn =
 export const btnPrimary = `${btn} bg-clay text-white hover:bg-clay-dark`
 export const btnSecondary = `${btn} border border-line bg-paper hover:bg-cream`
 export const inputCls =
-  'w-full rounded-lg border border-line bg-paper px-3 py-2 text-sm outline-none focus:border-clay-soft'
+  'w-full rounded-lg border border-field bg-paper px-3 py-2 text-sm focus-visible:border-clay'

@@ -7,7 +7,7 @@ export default function RecipeBody({ recipe }: Props) {
   return (
     <>
       {recipe.source_url && (
-        <a href={recipe.source_url} target="_blank" rel="noreferrer noopener" className="mt-1 inline-flex items-center gap-1 text-sm text-clay-soft hover:underline">
+        <a href={recipe.source_url} target="_blank" rel="noreferrer noopener" className="mt-1 inline-flex items-center gap-1 text-sm text-clay hover:underline">
           Receta original <ExternalLink className="size-3.5" aria-hidden="true" />
         </a>
       )}

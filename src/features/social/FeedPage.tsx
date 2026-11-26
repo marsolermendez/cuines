@@ -1,4 +1,7 @@
+import ErrorState from '../../components/ErrorState'
+import Loading from '../../components/Loading'
 import { btnSecondary } from '../../components/ui'
+import { useTitle } from '../../lib/useTitle'
 import EntryCard from '../diary/EntryCard'
 import { useSignedUrls } from '../diary/photos'
 import { useFeed } from '../diary/queries'
@@ -8,7 +11,8 @@ import PeopleSearch from './PeopleSearch'
 /** Inicio: lo último de las personas a las que sigo. */
 export default function FeedPage() {
   const me = useMe()
-  const { data, isPending, isError, hasNextPage, fetchNextPage, isFetchingNextPage } = useFeed()
+  const { data, isPending, isError, refetch, hasNextPage, fetchNextPage, isFetchingNextPage } = useFeed()
+  useTitle('Inicio')
   const entries = data?.pages.flat() ?? []
   const urls = useSignedUrls(entries.flatMap((e) => e.entry_photos.map((p) => p.thumb_path)))
 
@@ -20,8 +24,8 @@ export default function FeedPage() {
       </div>
 
       <div className="mt-6">
-        {isPending && <p className="text-ink-soft">Cargando…</p>}
-        {isError && <p>No se pudo cargar el inicio. Inténtalo de nuevo.</p>}
+        {isPending && <Loading />}
+        {isError && <ErrorState message="No se pudo cargar el inicio." onRetry={() => refetch()} />}
         {data && entries.length === 0 && (
           <div className="rounded-xl border border-dashed border-line p-8 text-center">
             <p className="font-serif text-xl">Aquí verás lo que cocinan las personas a las que sigas</p>

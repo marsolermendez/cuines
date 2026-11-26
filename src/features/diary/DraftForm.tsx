@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import Loading from '../../components/Loading'
 import { btnPrimary, btnSecondary, inputCls } from '../../components/ui'
 import { draftNotesSchema, recipeDraftSchema } from '../../lib/schemas'
+import { useTitle } from '../../lib/useTitle'
 import { useMe } from '../auth/profiles'
 import { PhotosField, usePhotos } from './PhotosField'
 import { RecipeFields, RecipeSummary, recipeInput, recipeValues } from './RecipeFields'
@@ -13,9 +15,10 @@ export default function DraftForm() {
   const { id } = useParams()
   const me = useMe()
   const { data: entry, isPending, isError } = useEntry(id)
+  useTitle(id ? 'Editar receta guardada' : 'Quiero cocinar')
 
   if (id) {
-    if (isPending) return <p className="text-ink-soft">Cargando…</p>
+    if (isPending) return <Loading cards={1} />
     if (isError || !entry || !hasRecipe(entry)) return <p>No se encontró este borrador.</p>
     if (entry.author_id !== me.id) return <p>Los borradores son privados.</p>
     if (entry.status !== 'draft') return <Navigate to={`/e/${id}`} replace />

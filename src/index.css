@@ -6,11 +6,19 @@
   --color-ink: #2b2420;
   --color-ink-soft: #6b5f57;
   --color-line: #e8dfd5;
+  /* Borde de campos de formulario: 3:1 sobre blanco (WCAG 1.4.11); --color-line es solo decorativo. */
+  --color-field: #9b8f84;
   --color-clay: #993c1d;
   --color-clay-dark: #712b13;
   --color-clay-soft: #d85a30;
   --font-serif: 'Fraunces', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* Anillo de foco visible para teclado en todo lo interactivo (los componentes no lo quitan). */
+:focus-visible {
+  outline: 2px solid var(--color-clay-soft);
+  outline-offset: 2px;
 }
 
 body {

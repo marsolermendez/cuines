@@ -2,11 +2,14 @@ import { useQueryClient } from '@tanstack/react-query'
 import { CalendarClock, ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import ErrorState from '../../components/ErrorState'
+import Loading from '../../components/Loading'
 import ProgressiveImage from '../../components/ProgressiveImage'
 import { btnPrimary, btnSecondary, inputCls } from '../../components/ui'
 import { formatDay, today } from '../../lib/dates'
 import { supabase } from '../../lib/supabase'
 import { norm } from '../../lib/text'
+import { useTitle } from '../../lib/useTitle'
 import { useMe } from '../auth/profiles'
 import { useSignedUrls } from './photos'
 import { useDrafts } from './queries'
@@ -45,7 +48,8 @@ function Planned({ day }: { day: string }) {
 export default function DraftsPage() {
   const me = useMe()
   const queryClient = useQueryClient()
-  const { data, isPending, isError } = useDrafts(me.id)
+  const { data, isPending, isError, refetch } = useDrafts(me.id)
+  useTitle('Quiero cocinar')
   const [q, setQ] = useState('')
   const [tag, setTag] = useState<string | null>(null)
   const [sort, setSort] = useState<Sort>('manual')
@@ -54,8 +58,8 @@ export default function DraftsPage() {
   const drafts = data ?? []
   const urls = useSignedUrls(drafts.flatMap((d) => d.entry_photos.map((p) => p.thumb_path)))
 
-  if (isPending) return <p className="text-ink-soft">Cargando…</p>
-  if (isError) return <p>No se pudieron cargar tus recetas guardadas.</p>
+  if (isPending) return <Loading />
+  if (isError) return <ErrorState message="No se pudieron cargar tus recetas guardadas." onRetry={() => refetch()} />
 
   const tags = [...new Set(drafts.flatMap((d) => d.tags))].sort((a, b) => a.localeCompare(b, 'es'))
   const query = norm(q.trim())
@@ -118,7 +122,7 @@ export default function DraftsPage() {
             <input
               type="search"
               className={`${inputCls} min-w-0 flex-1 basis-48`}
-              placeholder="Buscar por receta, nota o etiqueta"
+              placeholder="Buscar en tus recetas"
               aria-label="Buscar"
               value={q}
               onChange={(e) => setQ(e.target.value)}

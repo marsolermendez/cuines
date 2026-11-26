@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import Loading from '../../components/Loading'
 import { btnPrimary, btnSecondary, inputCls } from '../../components/ui'
 import { today } from '../../lib/dates'
+import { useTitle } from '../../lib/useTitle'
 import { entryFormSchema, recipeDraftSchema, recipeFormSchema } from '../../lib/schemas'
 import { supabase } from '../../lib/supabase'
 import type { Visibility } from '../../lib/types'
@@ -16,7 +18,7 @@ import { saveEntry, syncParticipants, useSaver, type RecipeFields as RecipeData 
 import { VISIBILITY } from './visibility'
 
 const storyCls =
-  'field-sizing-content min-h-48 w-full rounded-lg border border-line bg-paper px-3 py-2 text-base leading-7 outline-none focus:border-clay-soft'
+  'field-sizing-content min-h-48 w-full rounded-lg border border-field bg-paper px-3 py-2 text-base leading-7 focus-visible:border-clay'
 
 /**
  * Cuatro usos del mismo formulario:
@@ -34,16 +36,17 @@ export default function EntryForm() {
   const me = useMe()
   const { data: entry, isPending, isError } = useEntry(sourceId)
   const { data: preset, isPending: presetPending } = useRecipe(sourceId ? undefined : recipeParam)
+  useTitle(id ? 'Editar entrada' : from ? 'Cocinar ahora' : 'Nueva entrada')
 
   if (sourceId) {
-    if (isPending) return <p className="text-ink-soft">Cargando…</p>
+    if (isPending) return <Loading cards={1} />
     if (isError || !entry || !hasRecipe(entry)) return <p>No se encontró la entrada.</p>
     if (entry.author_id !== me.id) return <p>Solo quien la escribió puede editarla.</p>
     // Cada ruta con su tipo: un borrador se edita en /draft/:id y una publicada ya no se «cocina ahora».
     if (id && entry.status === 'draft') return <Navigate to={`/draft/${id}`} replace />
     if (from && entry.status !== 'draft') return <Navigate to={`/e/${from}`} replace />
   } else if (recipeParam) {
-    if (presetPending) return <p className="text-ink-soft">Cargando…</p>
+    if (presetPending) return <Loading cards={1} />
     if (!preset) return <p>No se encontró la receta, o no puedes verla.</p>
   }
   return (

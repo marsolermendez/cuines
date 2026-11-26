@@ -1,7 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import ErrorState from '../../components/ErrorState'
+import Loading from '../../components/Loading'
 import { btnPrimary, btnSecondary } from '../../components/ui'
+import { useTitle } from '../../lib/useTitle'
 import { supabase } from '../../lib/supabase'
 import { useMe } from '../auth/profiles'
 import EntryCard from './EntryCard'
@@ -18,7 +21,8 @@ export default function RecipePage() {
   const { id } = useParams()
   const me = useMe()
   const queryClient = useQueryClient()
-  const { data: recipe, isPending, isError } = useRecipe(id)
+  const { data: recipe, isPending, isError, refetch } = useRecipe(id)
+  useTitle(recipe?.title)
   const { data: stats } = useRecipeStats(id)
   const { data: entries = [] } = useRecipeEntries(id)
   const { data: draft } = useMyDraftOf(id)
@@ -26,8 +30,8 @@ export default function RecipePage() {
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<{ text: string; undoId?: string } | null>(null)
 
-  if (isPending) return <p className="text-ink-soft">Cargando…</p>
-  if (isError) return <p>No se pudo cargar la receta.</p>
+  if (isPending) return <Loading cards={1} />
+  if (isError) return <ErrorState message="No se pudo cargar la receta." onRetry={() => refetch()} />
   // La RLS no distingue «no existe» de «no puedes verla»: una receta existe para ti si es tuya o la usa algo que ves.
   if (!recipe) return <p>Esta receta no existe o no puedes verla.</p>
 

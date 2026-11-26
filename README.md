@@ -53,6 +53,8 @@ El secreto de Google nunca va en el repo ni en el código del cliente.
 
 El proyecto de producción (Google activado, **Email desactivado** y URLs de redirección) lo aplica Terraform: ver [infra/README.md](infra/README.md). Lo único manual es crear el cliente OAuth y pasar su ID y secreto a `infra/.env`. Como URI de redireccionamiento de producción usa el output `google_oauth_redirect_uri` de Terraform.
 
+**Pantalla de consentimiento en producción.** Mientras esté en modo *Pruebas*, solo entran las cuentas añadidas como usuarios de prueba (máximo 100). Para abrir la app a cualquiera: *Google Auth Platform → Público → Publicar aplicación*. Con los permisos básicos (email, perfil, openid) no hace falta verificación de Google.
+
 ## Scripts
 
 | Comando | Qué hace |
@@ -63,7 +65,7 @@ El proyecto de producción (Google activado, **Email desactivado** y URLs de red
 | `npm run db:start` | Arranca Supabase local (Docker) |
 | `npm run db:reset` | Recrea la base local con migraciones y `seed.sql` |
 | `npm run db:types` | Regenera `src/lib/database.types.ts` desde la base local |
-| `npm run db:test` | Ejecuta los tests pgTAP de privacidad |
+| `npm run db:test` | Ejecuta los tests pgTAP de privacidad (199, con una matriz de actores) |
 
 ## Despliegue en GitHub Pages
 
@@ -71,10 +73,23 @@ El repositorio, GitHub Pages y las variables `VITE_SUPABASE_URL` y `VITE_SUPABAS
 
 Las rutas llevan `#/` (por ejemplo `/#/e/123`) porque Pages no hace fallback a `index.html`.
 
+### Publicar un cambio
+
+1. `npm run typecheck && npm run db:test` en local.
+2. Si hay migraciones nuevas, **antes del push**: ensayo con `npx supabase db push --remote --dry-run` y luego `npx supabase db push --remote` (en la CLI v3 sin `--remote` apunta al Supabase local; la contraseña de la base de datos sale de `infra/tf stack output -raw supabase_db_password`).
+3. `git push origin main`: el workflow compila y publica. Una pestaña abierta durante un despliegue puede pedir un archivo con nombre antiguo; la app lo detecta y pide recargar.
+
+### Mantenimiento
+
+- El plan gratuito de Supabase **pausa el proyecto tras ~1 semana sin actividad**: se reactiva desde su panel.
+- Los reportes de comentarios se revisan en la tabla `reports` del panel de Supabase (no hay pantalla de moderación).
+- El token de acceso de Supabase de `infra/.env` solo hace falta para ejecutar Terraform; conviene que caduque o revocarlo cuando no se use.
+
 ## Estructura
 
 ```
 infra/          Terraform (GCP, Supabase, GitHub)
+public/         favicon
 src/            app React (router, componentes, features)
 src/lib/        cliente de Supabase, tipos generados, utilidades
 supabase/       configuración, migraciones, seed y tests pgTAP
@@ -84,4 +99,13 @@ docs/           plan del MVP
 
 ## Estado
 
-Fases 0 a 5 hechas: esqueleto, login con Google, diario con fotos, línea temporal y calendario, borradores («Quiero cocinar»), lo social (seguir con aprobación, feed, me gusta, comentarios y reportes) y recetas con identidad (página de receta con contadores, recetario, guardar las de otras personas, «Cocinar otra vez» y cocinar con alguien). Siguiente: Fase 6, pulido y despliegue.
+**MVP completo (fases 0 a 6):** login con Google, diario con fotos y relato, línea temporal y calendario, borradores («Quiero cocinar», «Cocinar ahora»), seguir con aprobación, feed, me gusta, comentarios y reportes, recetas con identidad (contadores, recetario, guardar las de otras personas, «Cocinar otra vez») y cocinar con alguien. Plan y decisiones de cada fase en [docs/plan.md](docs/plan.md).
+
+### Límites conocidos
+
+- **Sin vista previa al compartir enlaces** (es una SPA: los rastreadores no ejecutan JS). Se resolvería con una función que sirva etiquetas Open Graph.
+- **Sin notificaciones** ni avisos de actividad; las solicitudes se ven en Ajustes.
+- **Sin pantalla para editar una receta** ni para reordenar fotos; se edita desde cualquiera de sus entradas.
+- **Recetario limitado a 1000 filas** y me gusta como lista de ids por entrada: suficiente para un MVP, a pasar a SQL si crece.
+- **Los comentarios no se editan** y un reporte desaparece con su comentario.
+- **HEIC en Chrome de escritorio** no se decodifica (Safari y iOS sí): hay que convertir la foto a JPG.

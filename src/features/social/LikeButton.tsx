@@ -36,7 +36,7 @@ export default function LikeButton({ entryId, initialLiked, initialCount }: Prop
       onClick={toggle}
       aria-pressed={liked}
       aria-label={liked ? 'Quitar me gusta' : 'Me gusta'}
-      className={`inline-flex items-center gap-1.5 rounded-lg py-1 text-sm ${liked ? 'text-clay' : 'text-ink-soft hover:text-ink'}`}
+      className={`-mx-2 inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-sm ${liked ? 'text-clay' : 'text-ink-soft hover:text-ink'}`}
     >
       <Heart className={`size-5 ${liked ? 'fill-current' : ''}`} aria-hidden="true" />
       {count}

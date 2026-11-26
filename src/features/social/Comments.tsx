@@ -67,6 +67,7 @@ export default function Comments({ entryId, entryAuthorId }: { entryId: string; 
 
       {isPending && <p className="mt-3 text-sm text-ink-soft">Cargando…</p>}
       {isError && <p className="mt-3 text-sm">No se pudieron cargar los comentarios.</p>}
+      {comments?.length === 0 && <p className="mt-3 text-sm text-ink-soft">Todavía no hay comentarios. Sé la primera persona en escribir uno.</p>}
 
       <ul className="mt-4 grid gap-4">
         {comments?.map((c) => (

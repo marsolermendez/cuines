@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import Avatar from '../../components/Avatar'
 import { btnPrimary, btnSecondary, inputCls } from '../../components/ui'
 import { resizeToJpeg } from '../../lib/images'
+import { useTitle } from '../../lib/useTitle'
 import { profileFormSchema } from '../../lib/schemas'
 import { supabase } from '../../lib/supabase'
 import FollowRequests from '../social/FollowRequests'
@@ -10,6 +11,7 @@ import { useMe, useUpdateProfile } from './profiles'
 
 export default function SettingsPage() {
   const me = useMe()
+  useTitle('Ajustes')
   const update = useUpdateProfile()
   const [displayName, setDisplayName] = useState(me.display_name)
   const [bio, setBio] = useState(me.bio)

@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import ErrorState from '../../components/ErrorState'
+import Loading from '../../components/Loading'
 import { btnPrimary, btnSecondary } from '../../components/ui'
 import { formatMonth } from '../../lib/dates'
 import { useMe } from '../auth/profiles'
@@ -8,12 +10,12 @@ import { useTimeline } from './queries'
 
 export default function Timeline({ authorId }: { authorId: string }) {
   const isMe = useMe().id === authorId
-  const { data, isPending, isError, hasNextPage, fetchNextPage, isFetchingNextPage } = useTimeline(authorId)
+  const { data, isPending, isError, refetch, hasNextPage, fetchNextPage, isFetchingNextPage } = useTimeline(authorId)
   const entries = data?.pages.flat() ?? []
   const urls = useSignedUrls(entries.flatMap((e) => e.entry_photos.map((p) => p.thumb_path)))
 
-  if (isPending) return <p className="text-ink-soft">Cargando…</p>
-  if (isError) return <p>No se pudo cargar el diario. Inténtalo de nuevo.</p>
+  if (isPending) return <Loading />
+  if (isError) return <ErrorState message="No se pudo cargar el diario." onRetry={() => refetch()} />
 
   if (entries.length === 0) {
     return isMe ? (
