@@ -8,10 +8,7 @@ const MAX = 10
 
 type Props = { value: Person[]; onChange: (value: Person[]) => void; pending?: ReadonlySet<string> }
 
-/**
- * «Compartir autoría»: enseñar la entrada (y su receta) a quien cocinó contigo. Solo la autora la edita; la otra persona
- * tendrá que aceptar y entonces sale también en su diario y su recetario. Hasta entonces ya puede leerla.
- */
+/** «¿Con quién lo cocinaste?»: etiquetar personas. Tendrán que aceptar; hasta entonces la entrada ya les llega. */
 export default function ParticipantsField({ value, onChange, pending }: Props) {
   const [text, setText] = useState('')
   const { q, people } = usePeopleSearch(text)
@@ -19,12 +16,10 @@ export default function ParticipantsField({ value, onChange, pending }: Props) {
 
   return (
     <section>
-      <h3 className="font-serif text-lg font-medium">
-        Compartir autoría <span className="text-sm font-normal text-ink-soft">(opcional)</span>
+      <h3 className="mb-1 text-sm font-medium">
+        ¿Con quién lo cocinaste? <span className="font-normal text-ink-soft">(opcional)</span>
       </h3>
-      <p className="mb-3 mt-1 text-sm text-ink-soft">
-        ¿Lo cocinaste con alguien? Compártela con esa persona: podrá leerla aunque no sea pública y, cuando la acepte, saldrá también en su diario y su recetario. Solo tú puedes editarla.
-      </p>
+      <p className="mb-2 text-sm text-ink-soft">Las personas que etiquetes podrán leer esta entrada aunque no sea pública. Tendrán que aceptarla para que salga en su diario.</p>
 
       {value.length > 0 && (
         <ul className="mb-2 flex flex-wrap gap-2">
@@ -43,7 +38,7 @@ export default function ParticipantsField({ value, onChange, pending }: Props) {
 
       {value.length < MAX && (
         <>
-          <input type="search" className={inputCls} aria-label="Buscar personas con quien compartir la autoría" placeholder="Buscar por nombre o @usuario" value={text} onChange={(e) => setText(e.target.value)} />
+          <input type="search" className={inputCls} aria-label="Buscar personas para etiquetar" placeholder="Buscar por nombre o @usuario" value={text} onChange={(e) => setText(e.target.value)} />
           {q.length >= 2 && candidates.length > 0 && (
             <ul className="mt-1 grid gap-1">
               {candidates.map((p) => (

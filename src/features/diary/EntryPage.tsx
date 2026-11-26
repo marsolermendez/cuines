@@ -74,7 +74,7 @@ export default function EntryPage() {
       {myTag && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-paper px-4 py-3 text-sm">
           <p className="min-w-0 flex-1">
-            {myTag.status === 'pending' ? `${author?.display_name} ha compartido esta entrada contigo.` : 'Comparten esta entrada contigo y aparece en tu diario.'}
+            {myTag.status === 'pending' ? `${author?.display_name} te ha etiquetado en esta entrada.` : 'Te etiquetaron en esta entrada y aparece en tu diario.'}
           </p>
           {myTag.status === 'pending' && (
             <button className={btnPrimary} disabled={answer.isPending} onClick={() => answer.mutate({ entryId: entry.id, accept: true })}>
@@ -105,7 +105,7 @@ export default function EntryPage() {
 
       {(accepted.length > 0 || pendingTags.length > 0) && (
         <p className="mt-2 text-sm text-ink-soft">
-          Autoría compartida con{' '}
+          Cocinado con{' '}
           {[...accepted, ...pendingTags].map((p, i) => (
             <span key={p.user_id}>
               {i > 0 && ', '}

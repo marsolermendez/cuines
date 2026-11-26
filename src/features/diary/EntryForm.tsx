@@ -124,7 +124,7 @@ function EntryFormBody({ existing, preset }: { existing?: Loaded; preset?: Linke
       (entryId) =>
         navigate(`/e/${entryId}`, {
           replace: !!existing,
-          state: tagsSaved ? undefined : { notice: 'La entrada se guardó, pero no se pudo compartir con todas las personas. Puedes repetirlo editándola.' },
+          state: tagsSaved ? undefined : { notice: 'La entrada se guardó, pero no se pudo etiquetar a todas las personas. Puedes repetirlo editándola.' },
         }),
     )
   }
