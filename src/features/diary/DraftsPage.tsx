@@ -143,7 +143,7 @@ export default function DraftsPage() {
                   key={t}
                   aria-pressed={tag === t}
                   onClick={() => setTag(tag === t ? null : t)}
-                  className={`rounded-full border px-3 py-1 text-xs ${tag === t ? 'border-clay bg-clay text-white' : 'border-line bg-paper text-ink-soft hover:bg-cream'}`}
+                  className={`rounded-full border px-3 py-1 text-xs ${tag === t ? 'border-clay bg-clay text-on-clay' : 'border-line bg-paper text-ink-soft hover:bg-cream'}`}
                 >
                   {t}
                 </button>

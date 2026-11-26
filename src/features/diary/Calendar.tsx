@@ -61,7 +61,7 @@ export default function Calendar({ authorId }: { authorId: string }) {
               onClick={() => setSelected(selected === day ? null : day)}
               aria-pressed={selected === day}
               aria-label={`${formatDay(day)}: ${items.length} ${items.length === 1 ? 'entrada' : 'entradas'}`}
-              className={`${base} bg-clay font-medium text-white ${selected === day ? 'outline-2 outline-offset-2 outline-clay-soft' : ''}`}
+              className={`${base} bg-clay font-medium text-on-clay ${selected === day ? 'outline-2 outline-offset-2 outline-clay-soft' : ''}`}
             >
               {i + 1}
               {items.length > 1 && (

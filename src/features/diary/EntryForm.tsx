@@ -156,7 +156,7 @@ function EntryFormBody({ existing, preset }: { existing?: Loaded; preset?: Linke
   }
 
   const tab = (active: boolean) =>
-    `rounded-lg px-3 py-1.5 text-sm ${active ? 'bg-ink text-white' : 'border border-line bg-paper text-ink-soft hover:bg-cream'}`
+    `rounded-lg px-3 py-1.5 text-sm ${active ? 'bg-ink text-cream' : 'border border-line bg-paper text-ink-soft hover:bg-cream'}`
 
   return (
     <form onSubmit={publish} className="grid gap-8">

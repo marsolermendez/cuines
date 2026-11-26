@@ -36,7 +36,7 @@ export function usePhotos(initial: ExistingPhoto[]) {
 export type PhotosState = ReturnType<typeof usePhotos>
 
 const tile = 'aspect-square w-full rounded-lg bg-line object-cover'
-const removeBtn = 'absolute right-1 top-1 rounded-full bg-ink/70 p-1 text-white hover:bg-ink'
+const removeBtn = 'absolute right-1 top-1 rounded-full bg-cream/80 p-1 text-ink hover:bg-cream'
 
 export function PhotosField({ photos, hint }: { photos: PhotosState; hint: string }) {
   const urls = useSignedUrls(photos.kept.map((p) => p.thumb_path))

@@ -149,7 +149,7 @@ Móvil: barra inferior con 5 pestañas. Escritorio: misma navegación en barra l
 
 **Cocinar con alguien:** campo "¿Con quién?" en el formulario (busca `username`). El invitado ve la solicitud en `/settings`; al aceptar, la entrada aparece en su diario y recetario como solo lectura con "con @autor". No aparece en el feed de sus seguidores (el feed solo trae entradas por autor).
 
-**Estética y tono "Polarsteps": foto + relato.** Fondo crema `#FBF7F2`, acento terracota, texto marrón oscuro, titulares serif (p. ej. Fraunces) y texto sans con buena medida de lectura (~65 caracteres, interlineado amplio). Tokens de color en variables CSS del tema de Tailwind.
+**Estética y tono "Polarsteps": foto + relato.** Tema oscuro verde pino (fondo `#0C1F19`, tarjetas `#153028`), acento tomate `#FF7A5C`, texto hueso `#F4EFE3`, tipografía Sora y buena medida de lectura (~65 caracteres, interlineado amplio). Logo: olla con tapa y llamas. Tokens de color en variables CSS del tema de Tailwind (los nombres `cream`, `paper` y `clay` se conservan aunque ya no describan el color).
 - **Entrada = una historia:** título y fecha, mosaico de fotos a sangre y debajo el relato completo en párrafos, seguido de una tarjeta de receta (enlazada, con sus contadores) y comentarios. Editor de texto que crece solo; el relato es tan importante como la foto.
 - **Tarjeta del feed:** foto grande + título + primeras líneas del relato con "Leer más" (no solo foto).
 - **Diario con tres vistas (pestañas): Línea temporal · Calendario · Recetario.** Es la misma lista de entradas vista de tres formas.

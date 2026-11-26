@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import Logo from '../../components/Logo'
 import { btnSecondary } from '../../components/ui'
 import { useSession } from './AuthProvider'
 import { Splash } from './RequireAuth'
@@ -61,7 +62,9 @@ export default function LoginPage() {
   return (
     <main className="grid min-h-screen place-items-center px-6">
       <div className="w-full max-w-sm text-center">
-        <h1 className="font-serif text-5xl font-medium">Cuines</h1>
+        <h1 className="text-4xl">
+          <Logo />
+        </h1>
         <p className="mt-3 text-ink-soft">Tu diario de cocina: lo que cocinas, cómo sale y con quién lo comes.</p>
         <button className={`${btnSecondary} mt-8 w-full py-3`} onClick={signIn} disabled={busy}>
           <GoogleLogo />

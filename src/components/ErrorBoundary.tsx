@@ -28,7 +28,7 @@ export default class ErrorBoundary extends Component<{ children: ReactNode }, St
         <p className="text-ink-soft">
           {stale ? 'Se ha publicado una actualización. Recarga la página para continuar.' : 'No hemos podido mostrar esta pantalla. Recarga la página; si sigue igual, vuelve más tarde.'}
         </p>
-        <button className="mx-auto inline-flex rounded-lg bg-clay px-4 py-2 text-sm font-medium text-white hover:bg-clay-dark" onClick={() => window.location.reload()}>
+        <button className="mx-auto inline-flex rounded-lg bg-clay px-4 py-2 text-sm font-medium text-on-clay hover:bg-clay-dark" onClick={() => window.location.reload()}>
           Recargar
         </button>
       </div>

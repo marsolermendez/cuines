@@ -5,6 +5,7 @@ import { useMe } from '../features/auth/profiles'
 import { useFollowRequests } from '../features/social/follows'
 import { useParticipationRequests } from '../features/social/participation'
 import Loading from './Loading'
+import Logo from './Logo'
 
 export default function Layout() {
   const me = useMe()
@@ -33,7 +34,9 @@ export default function Layout() {
         Saltar al contenido
       </button>
       <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-10 flex border-t border-line bg-paper md:static md:w-52 md:shrink-0 md:flex-col md:gap-1 md:border-0 md:bg-transparent md:p-4">
-        <p className="hidden px-3 py-4 font-serif text-2xl font-medium md:block">Cuines</p>
+        <p className="hidden px-3 py-4 text-2xl md:block">
+          <Logo />
+        </p>
         {tabs.map(({ to, label, icon: Icon, end, badge }) => (
           <NavLink
             key={to}
@@ -48,7 +51,7 @@ export default function Layout() {
             <span className="relative">
               <Icon className="size-5" aria-hidden="true" />
               {!!badge && (
-                <span className="absolute -right-2 -top-1 flex size-4 items-center justify-center rounded-full bg-clay text-[10px] font-medium text-white" aria-label={`${badge} solicitudes`}>
+                <span className="absolute -right-2 -top-1 flex size-4 items-center justify-center rounded-full bg-clay text-[10px] font-medium text-on-clay" aria-label={`${badge} solicitudes`}>
                   {badge}
                 </span>
               )}

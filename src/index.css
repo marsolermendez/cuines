@@ -1,18 +1,27 @@
 @import 'tailwindcss';
 
+/* Paleta Bosque (tema oscuro). Los nombres vienen de la paleta anterior: cream = fondo, paper = tarjeta, clay = acento. */
 @theme {
-  --color-cream: #fbf7f2;
-  --color-paper: #ffffff;
-  --color-ink: #2b2420;
-  --color-ink-soft: #6b5f57;
-  --color-line: #e8dfd5;
-  /* Borde de campos de formulario: 3:1 sobre blanco (WCAG 1.4.11); --color-line es solo decorativo. */
-  --color-field: #9b8f84;
-  --color-clay: #993c1d;
-  --color-clay-dark: #712b13;
-  --color-clay-soft: #d85a30;
-  --font-serif: 'Fraunces', Georgia, serif;
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --color-cream: #0c1f19;
+  --color-paper: #153028;
+  --color-ink: #f4efe3;
+  --color-ink-soft: #a9c0b5;
+  --color-line: #1f4137;
+  /* Borde de campos de formulario: 3:1 sobre --color-paper (WCAG 1.4.11); --color-line es solo decorativo. */
+  --color-field: #6f9484;
+  --color-clay: #ff7a5c;
+  --color-clay-dark: #e8664a;
+  --color-clay-soft: #ff9c85;
+  /* Texto sobre fondos clay: el blanco no llega a 4,5:1 sobre el tomate. */
+  --color-on-clay: #0c1f19;
+  /* font-serif conserva el nombre de cuando los titulares eran Fraunces; ahora todo es Sora. */
+  --font-serif: 'Sora', system-ui, sans-serif;
+  --font-sans: 'Sora', system-ui, sans-serif;
+}
+
+/* Controles nativos (fechas, selects, scrollbars) en oscuro. */
+:root {
+  color-scheme: dark;
 }
 
 /* Anillo de foco visible para teclado en todo lo interactivo (los componentes no lo quitan). */
