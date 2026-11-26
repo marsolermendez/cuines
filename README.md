@@ -53,7 +53,7 @@ El secreto de Google nunca va en el repo ni en el código del cliente.
 
 El proyecto de producción (Google activado, **Email desactivado** y URLs de redirección) lo aplica Terraform: ver [infra/README.md](infra/README.md). Lo único manual es crear el cliente OAuth y pasar su ID y secreto a `infra/.env`. Como URI de redireccionamiento de producción usa el output `google_oauth_redirect_uri` de Terraform.
 
-**Pantalla de consentimiento en producción.** Mientras esté en modo *Pruebas*, solo entran las cuentas añadidas como usuarios de prueba (máximo 100). Para abrirla a cualquier cuenta de Google: *Google Auth Platform → Público → Publicar aplicación*; con los permisos básicos (email, perfil, openid) no hace falta verificación de Google. **Publicarla no abre Cuines a nadie:** quién puede crear cuenta lo decide la lista de acceso de abajo, que es independiente de Google.
+**Pantalla de consentimiento en producción.** Está **publicada** (*Google Auth Platform → Público → En producción*): cualquier cuenta de Google llega al botón de entrar, y quién puede crear cuenta lo decide solo la lista de acceso de abajo. Para publicar, Google exige una URL de página principal y otra de política de privacidad: la política es [`public/privacidad.html`](public/privacidad.html) (se sirve en `/cuines/privacidad.html`) y ambas URLs, junto con el dominio autorizado de GitHub Pages, están en *Información de la marca*. Con los permisos básicos (email, perfil, openid) no hace falta verificación. Para cerrarla otra vez: *Público → Volver al modo de prueba* (entonces solo entran los usuarios de prueba).
 
 ## Quién puede entrar
 
@@ -74,6 +74,7 @@ delete from public.allowed_emails where email = 'persona@gmail.com';
 - Quien intenta entrar sin estar en la lista ve «Esta cuenta de Google todavía no tiene acceso a Cuines».
 - Los correos reales **no se versionan** (el repo es público): en producción se cargan aparte. En local, `supabase/seed.sql` deja pasar tres correos de prueba inventados (`@test.local`).
 - El filtro solo afecta a los altas que hace el servicio de Auth (la conexión `supabase_auth_admin`); el SQL de administración, las migraciones y los tests no pasan por él.
+- **Con la pantalla de Google publicada, esta lista es la única barrera de acceso.** Comprueba que funciona intentando entrar con una cuenta de Google que no esté en ella.
 - Si alguien de la lista es rechazado, comprueba que su correo coincide exacto con el de su cuenta de Google.
 
 Para comprobar el cableado contra el Auth local (los tests pgTAP no pueden suplantar al servicio de Auth):

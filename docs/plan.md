@@ -314,4 +314,5 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **La decisión vive en `email_has_access(text)`** (comparación exacta, sin distinguir mayúsculas ni espacios alrededor), que se prueba en pgTAP. El rechazo real lo dispara la conexión del Auth, que los tests no pueden suplantar (`postgres` no puede asumir ese rol): se comprueba contra el Auth local con `curl`, como se describe en el README.
 - **No echa a quien ya tiene cuenta.** Para eso, además de quitarlo de la lista, se borra o bloquea en *Authentication → Users*.
 - **Los correos reales no van en ninguna migración** (repo público): se cargan aparte. La pantalla de entrada explica el rechazo.
+- **Pantalla de consentimiento publicada** (26-nov-2026). Google bloquea «Publicar» sin URL de página principal y de política de privacidad, así que se añadió `public/privacidad.html` (contacto: *Issues* del repo, sin correos reales) y se registró `marsolermendez.github.io` como dominio autorizado. Desde entonces la lista de acceso es la única barrera: queda pendiente probar un rechazo real en producción con una cuenta de Google ajena a la lista.
 
