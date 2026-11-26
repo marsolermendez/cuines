@@ -124,7 +124,7 @@ function EntryFormBody({ existing, preset }: { existing?: Loaded; preset?: Linke
       (entryId) =>
         navigate(`/e/${entryId}`, {
           replace: !!existing,
-          state: tagsSaved ? undefined : { notice: 'La entrada se guardó, pero no se pudo etiquetar a todas las personas. Puedes repetirlo editándola.' },
+          state: tagsSaved ? undefined : { notice: 'La entrada se guardó, pero no se pudo compartir con todas las personas. Puedes repetirlo editándola.' },
         }),
     )
   }
@@ -186,6 +186,8 @@ function EntryFormBody({ existing, preset }: { existing?: Loaded; preset?: Linke
         </label>
       </section>
 
+      <ParticipantsField value={people} onChange={setPeople} pending={pendingIds} />
+
       {existing ? (
         recipeIsMine ? (
           <RecipeFields value={recipe} onChange={setRecipe} />
@@ -215,8 +217,6 @@ function EntryFormBody({ existing, preset }: { existing?: Loaded; preset?: Linke
           )}
         </section>
       )}
-
-      <ParticipantsField value={people} onChange={setPeople} pending={pendingIds} />
 
       <fieldset className="grid gap-2">
         <legend className="mb-1 text-sm font-medium">¿Quién puede verla?</legend>

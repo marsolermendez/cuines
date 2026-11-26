@@ -12,7 +12,7 @@
 | Seguir | **Siempre solicitud que aprueba el dueño** (diario público o privado; antes un público aceptaba al instante) |
 | Login | **Solo Google** (sin email/contraseña ni Apple) |
 | Diarios | Uno por usuario: perfil = diario |
-| Cocinar con alguien | Etiquetar participantes: autor único, el etiquetado acepta y puede salirse |
+| Cocinar con alguien | **Compartir autoría** (etiquetar participantes): autor único, solo quien escribe edita; el etiquetado acepta y puede salirse |
 | Nombre | **Cuines** |
 | Hosting | GitHub Pages en la cuenta **personal `marsolermendez`** (no la de Hike): gratis, URL fea (`marsolermendez.github.io/cuines`), sin dominio propio |
 | Tono visual | Fotos protagonistas **y mucho texto** (relatos largos, estilo Polarsteps) |
@@ -147,7 +147,7 @@ Móvil: barra inferior con 5 pestañas. Escritorio: misma navegación en barra l
 
 **Guardar de otros:** botón en `/r/:id` (y en la tarjeta de receta de cada entrada) → RPC `save_as_draft(recipe_id)` → aviso "Guardada en Quiero cocinar" (con deshacer). El borrador **enlaza** la misma receta (no se copia nada) y, cuando la cocines, cuenta en sus contadores. No viajan fotos ni relato.
 
-**Cocinar con alguien:** campo "¿Con quién?" en el formulario (busca `username`). El invitado ve la solicitud en `/settings`; al aceptar, la entrada aparece en su diario y recetario como solo lectura con "con @autor". No aparece en el feed de sus seguidores (el feed solo trae entradas por autor).
+**Cocinar con alguien:** sección "Compartir autoría" del formulario, justo debajo del relato (busca `username`); solo la autora edita. El invitado ve la solicitud en `/settings`; al aceptar, la entrada aparece en su diario y recetario como solo lectura con "con @autor". No aparece en el feed de sus seguidores (el feed solo trae entradas por autor).
 
 **Estética y tono "Polarsteps": foto + relato.** Tema oscuro verde pino (fondo `#0C1F19`, tarjetas `#153028`), acento tomate `#FF7A5C`, texto hueso `#F4EFE3`, tipografía Sora y buena medida de lectura (~65 caracteres, interlineado amplio). Logo: olla con tapa y llamas. Tokens de color en variables CSS del tema de Tailwind (los nombres `cream`, `paper` y `clay` se conservan aunque ya no describan el color).
 - **Entrada = una historia:** título y fecha, mosaico de fotos a sangre y debajo el relato completo en párrafos, seguido de una tarjeta de receta (enlazada, con sus contadores) y comentarios. Editor de texto que crece solo; el relato es tan importante como la foto.
@@ -298,7 +298,7 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **Quien lee ve a quienes aceptaron** («cocinado con…»); las pendientes solo las ven las dos partes. Un tercero no ve etiquetas de entradas que no puede leer.
 - **Etiquetar es best-effort tras guardar:** la entrada ya existe, así que si falla se avisa y se puede repetir editándola (no se deshace la entrada).
 - **Recetario con techo de 1000 filas** (límite de PostgREST); con más veces cocinadas habría que agrupar en SQL.
-- Textos de la interfaz sin género (por ejemplo «Te etiquetaron…», «Te damos la bienvenida…»).
+- Textos de la interfaz sin género (por ejemplo «Han compartido contigo…», «Te damos la bienvenida…»).
 
 **Fase 6**
 - **Bundle por rutas:** cada pantalla es un archivo (`React.lazy`) y las librerías van en tres archivos aparte (`react`, `supabase`, `vendor`) para que el navegador las reutilice tras cada despliegue. De 681 kB a 16 kB de código de la app. Si una pestaña abierta pide un archivo con nombre antiguo tras un despliegue, `ErrorBoundary` lo detecta y pide recargar en vez de dejar la pantalla en blanco.

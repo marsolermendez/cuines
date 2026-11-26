@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { btnPrimary, btnSecondary } from '../../components/ui'
 import { useAnswerParticipation, useParticipationRequests } from './participation'
 
-/** Entradas en las que me han etiquetado: se leen, y se aceptan (pasan a mi diario) o se rechazan. */
+/** Entradas que han compartido conmigo: se leen, y se aceptan (pasan a mi diario) o se rechazan. */
 export default function ParticipationRequests() {
   const { data: requests = [] } = useParticipationRequests()
   const answer = useAnswerParticipation()
@@ -11,7 +11,7 @@ export default function ParticipationRequests() {
   return (
     <section className="mt-10 max-w-md" aria-labelledby="etiquetas">
       <h3 id="etiquetas" className="font-serif text-lg font-medium">
-        Te han etiquetado ({requests.length})
+        Han compartido contigo ({requests.length})
       </h3>
       <ul className="mt-3 grid gap-3">
         {requests.map((r) => (
@@ -19,7 +19,7 @@ export default function ParticipationRequests() {
             <Link to={`/e/${r.entry_id}`} className="text-sm hover:underline">
               <span className="font-medium">{r.entries?.title}</span>
               <span className="block text-ink-soft">
-                cocinado con {r.entries?.profiles?.display_name} (@{r.entries?.profiles?.username})
+                de {r.entries?.profiles?.display_name} (@{r.entries?.profiles?.username})
               </span>
             </Link>
             <div className="mt-2 flex gap-2">
