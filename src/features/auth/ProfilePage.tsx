@@ -8,6 +8,7 @@ import Calendar from '../diary/Calendar'
 import Recipebook from '../diary/Recipebook'
 import Timeline from '../diary/Timeline'
 import FollowButton from '../social/FollowButton'
+import FollowLists from '../social/FollowLists'
 import { useFollowStatus } from '../social/follows'
 import { useMe, useProfileByUsername } from './profiles'
 
@@ -45,6 +46,8 @@ export default function ProfilePage({ view }: { view: 'timeline' | 'calendar' | 
         {otherId && <FollowButton profile={profile} />}
       </header>
       {profile.bio && <p className="mt-4 whitespace-pre-line">{profile.bio}</p>}
+      {/* La RLS de follows solo deja ver los seguimientos propios: en el perfil de otra persona no habría nada que listar. */}
+      {!otherId && <FollowLists />}
 
       {otherId && followPending ? (
         <div className="mt-8">
