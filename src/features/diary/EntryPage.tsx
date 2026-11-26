@@ -1,16 +1,17 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { ExternalLink } from 'lucide-react'
 import { useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '../../components/Avatar'
 import ProgressiveImage from '../../components/ProgressiveImage'
-import { btnSecondary } from '../../components/ui'
+import { btnPrimary, btnSecondary } from '../../components/ui'
 import { formatDay } from '../../lib/dates'
 import { useMe } from '../auth/profiles'
 import Comments from '../social/Comments'
 import LikeButton from '../social/LikeButton'
+import { useAnswerParticipation } from '../social/participation'
+import RecipeBody from './RecipeBody'
 import { useSignedUrls } from './photos'
-import { useEntry } from './queries'
+import { useEntry, useRecipeStats } from './queries'
 import { deleteEntry } from './save'
 import { visibilityInfo } from './visibility'
 
@@ -24,6 +25,9 @@ export default function EntryPage() {
   const [error, setError] = useState<string | null>(null)
   const photos = entry?.entry_photos ?? []
   const urls = useSignedUrls(photos.flatMap((p) => [p.path, p.thumb_path]))
+  const { data: stats } = useRecipeStats(entry?.recipes?.id)
+  const answer = useAnswerParticipation()
+  const notice = (useLocation().state as { notice?: string } | null)?.notice
 
   if (isPending) return <p className="text-ink-soft">Cargando…</p>
   if (isError) return <p>No se pudo cargar la entrada.</p>
@@ -37,6 +41,10 @@ export default function EntryPage() {
   const author = entry.profiles
   const vis = visibilityInfo(entry.visibility)
   const [cover, ...rest] = photos
+  // Personas etiquetadas: todas las ve su autora; quien lee la entrada solo ve a quienes aceptaron.
+  const accepted = entry.entry_participants.filter((p) => p.status === 'accepted')
+  const pendingTags = mine ? entry.entry_participants.filter((p) => p.status === 'pending') : []
+  const myTag = entry.entry_participants.find((p) => p.user_id === me.id)
 
   async function remove() {
     if (!entry || !window.confirm('¿Borrar esta entrada y sus fotos? No se puede deshacer.')) return
@@ -54,6 +62,26 @@ export default function EntryPage() {
 
   return (
     <article>
+      {notice && (
+        <p role="status" className="mb-4 rounded-lg border border-line bg-paper px-4 py-3 text-sm">
+          {notice}
+        </p>
+      )}
+      {myTag && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-paper px-4 py-3 text-sm">
+          <p className="min-w-0 flex-1">
+            {myTag.status === 'pending' ? `${author?.display_name} te ha etiquetado en esta entrada.` : 'Te etiquetaron en esta entrada y aparece en tu diario.'}
+          </p>
+          {myTag.status === 'pending' && (
+            <button className={btnPrimary} disabled={answer.isPending} onClick={() => answer.mutate({ entryId: entry.id, accept: true })}>
+              Aceptar
+            </button>
+          )}
+          <button className={btnSecondary} disabled={answer.isPending} onClick={() => answer.mutate({ entryId: entry.id, accept: false })}>
+            {myTag.status === 'pending' ? 'Rechazar' : 'Salir'}
+          </button>
+        </div>
+      )}
       <p className="text-sm text-ink-soft">{entry.cooked_on && formatDay(entry.cooked_on, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
       <h2 className="mt-1 font-serif text-3xl font-medium leading-tight">{entry.title}</h2>
       <div className="mt-3 flex items-center gap-3 text-sm text-ink-soft">
@@ -70,6 +98,21 @@ export default function EntryPage() {
           </span>
         )}
       </div>
+
+      {(accepted.length > 0 || pendingTags.length > 0) && (
+        <p className="mt-2 text-sm text-ink-soft">
+          Cocinado con{' '}
+          {[...accepted, ...pendingTags].map((p, i) => (
+            <span key={p.user_id}>
+              {i > 0 && ', '}
+              <Link to={`/u/${p.profiles?.username}`} className="text-ink hover:underline">
+                @{p.profiles?.username}
+              </Link>
+              {p.status === 'pending' && ' (pendiente)'}
+            </span>
+          ))}
+        </p>
+      )}
 
       {cover && (
         <div className="mt-6 grid gap-2">
@@ -94,34 +137,17 @@ export default function EntryPage() {
 
       {recipe && (
         <section className="mt-10 rounded-xl border border-line bg-paper p-5">
-          <h3 className="font-serif text-xl font-medium">{recipe.title}</h3>
-          {recipe.source_url && (
-            <a href={recipe.source_url} target="_blank" rel="noreferrer noopener" className="mt-1 inline-flex items-center gap-1 text-sm text-clay-soft hover:underline">
-              Receta original <ExternalLink className="size-3.5" aria-hidden="true" />
-            </a>
+          <h3 className="font-serif text-xl font-medium">
+            <Link to={`/r/${recipe.id}`} className="hover:underline">
+              {recipe.title}
+            </Link>
+          </h3>
+          {stats && stats.times > 0 && (
+            <p className="mt-0.5 text-sm text-ink-soft">
+              Hecha {stats.times} {stats.times === 1 ? 'vez' : 'veces'} · {stats.people} {stats.people === 1 ? 'persona' : 'personas'}
+            </p>
           )}
-          {recipe.ingredients.length > 0 && (
-            <>
-              <h4 className="mt-4 text-sm font-medium">Ingredientes</h4>
-              <ul className="mt-1 list-disc pl-5 leading-7">
-                {recipe.ingredients.map((x, i) => (
-                  <li key={i}>{x}</li>
-                ))}
-              </ul>
-            </>
-          )}
-          {recipe.steps.length > 0 && (
-            <>
-              <h4 className="mt-4 text-sm font-medium">Pasos</h4>
-              <ol className="mt-1 list-decimal pl-5 leading-7">
-                {recipe.steps.map((x, i) => (
-                  <li key={i} className="pl-1">
-                    {x}
-                  </li>
-                ))}
-              </ol>
-            </>
-          )}
+          <RecipeBody recipe={recipe} />
         </section>
       )}
 

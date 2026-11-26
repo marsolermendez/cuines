@@ -29,7 +29,7 @@ export default function OnboardingPage() {
 
   return (
     <main className="mx-auto grid min-h-screen max-w-md content-center px-6">
-      <h1 className="font-serif text-3xl font-medium">Bienvenida a Cuines</h1>
+      <h1 className="font-serif text-3xl font-medium">Te damos la bienvenida a Cuines</h1>
       <p className="mt-2 text-ink-soft">Elige cómo te van a encontrar. El nombre de usuario no se puede cambiar después.</p>
       <form onSubmit={submit} className="mt-6 grid gap-4">
         <label className="grid gap-1 text-sm">

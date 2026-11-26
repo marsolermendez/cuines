@@ -6,6 +6,7 @@ import ProgressiveImage from '../../components/ProgressiveImage'
 import { btnPrimary, btnSecondary, inputCls } from '../../components/ui'
 import { formatDay, today } from '../../lib/dates'
 import { supabase } from '../../lib/supabase'
+import { norm } from '../../lib/text'
 import { useMe } from '../auth/profiles'
 import { useSignedUrls } from './photos'
 import { useDrafts } from './queries'
@@ -29,9 +30,6 @@ const sorters: Record<Sort, (a: Draft, b: Draft) => number> = {
   recent: (a, b) => b.created_at.localeCompare(a.created_at),
   az: (a, b) => (a.recipes?.title ?? '').localeCompare(b.recipes?.title ?? '', 'es'),
 }
-
-// Búsqueda sin distinguir mayúsculas ni tildes.
-const norm = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 
 function Planned({ day }: { day: string }) {
   const sameMonth = day.slice(0, 7) === today().slice(0, 7)

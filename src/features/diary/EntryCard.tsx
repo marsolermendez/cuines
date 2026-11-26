@@ -1,4 +1,4 @@
-import { MessageCircle, UtensilsCrossed } from 'lucide-react'
+import { MessageCircle, UtensilsCrossed, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Avatar from '../../components/Avatar'
 import ProgressiveImage from '../../components/ProgressiveImage'
@@ -14,12 +14,14 @@ type Props = {
     body: string
     cooked_on: string | null
     visibility: string
-    recipes: { title: string } | null
+    recipes?: { title: string } | null
     entry_photos: { thumb_path: string; placeholder: string; width: number; height: number }[]
   }
   urls: Record<string, string>
   /** En mi propio diario se enseña con quién se comparte cada entrada. */
   showVisibility?: boolean
+  /** Nombre de quien la escribió, si la entrada es de otra persona y estoy etiquetada: «Con …». */
+  sharedBy?: string
   /** En el feed se enseña quién la escribió. */
   author?: Pick<Profile, 'username' | 'display_name' | 'avatar_url'> | null
   /** Me gusta y comentarios (feed). */
@@ -30,7 +32,7 @@ type Props = {
  * Tarjeta de una entrada: foto de portada, título y el comienzo del relato (el texto importa tanto como la foto).
  * Toda la tarjeta es un enlace (el del título, estirado); lo interactivo de dentro va por encima (`relative z-10`).
  */
-export default function EntryCard({ entry, urls, showVisibility, author, social }: Props) {
+export default function EntryCard({ entry, urls, showVisibility, sharedBy, author, social }: Props) {
   const cover = entry.entry_photos[0]
   const vis = visibilityInfo(entry.visibility)
   return (
@@ -54,6 +56,12 @@ export default function EntryCard({ entry, urls, showVisibility, author, social 
       <div className="p-4">
         <p className="flex items-center gap-2 text-xs text-ink-soft">
           {entry.cooked_on && formatDay(entry.cooked_on)}
+          {sharedBy && (
+            <span className="inline-flex items-center gap-1">
+              <Users className="size-3" aria-hidden="true" />
+              con {sharedBy}
+            </span>
+          )}
           {showVisibility && entry.visibility !== 'public' && (
             <span className="inline-flex items-center gap-1">
               <vis.icon className="size-3" aria-hidden="true" />

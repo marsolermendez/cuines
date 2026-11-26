@@ -2,6 +2,7 @@ import { Lock } from 'lucide-react'
 import { NavLink, useParams } from 'react-router-dom'
 import Avatar from '../../components/Avatar'
 import Calendar from '../diary/Calendar'
+import Recipebook from '../diary/Recipebook'
 import Timeline from '../diary/Timeline'
 import FollowButton from '../social/FollowButton'
 import { useFollowStatus } from '../social/follows'
@@ -11,7 +12,7 @@ const tab = ({ isActive }: { isActive: boolean }) =>
   `border-b-2 px-3 py-2 text-sm ${isActive ? 'border-clay-soft text-ink' : 'border-transparent text-ink-soft hover:text-ink'}`
 
 /** Perfil = diario. El mismo diario se ve como línea temporal o como calendario mensual. */
-export default function ProfilePage({ view }: { view: 'timeline' | 'calendar' }) {
+export default function ProfilePage({ view }: { view: 'timeline' | 'calendar' | 'recipes' }) {
   const { username } = useParams()
   const me = useMe()
   const { data: profile, isPending, isError } = useProfileByUsername(username)
@@ -62,8 +63,11 @@ export default function ProfilePage({ view }: { view: 'timeline' | 'calendar' })
             <NavLink to={`/u/${profile.username}/calendario`} className={tab}>
               Calendario
             </NavLink>
+            <NavLink to={`/u/${profile.username}/recetario`} className={tab}>
+              Recetario
+            </NavLink>
           </nav>
-          {view === 'timeline' ? <Timeline authorId={profile.id} /> : <Calendar authorId={profile.id} />}
+          {view === 'timeline' ? <Timeline authorId={profile.id} /> : view === 'calendar' ? <Calendar authorId={profile.id} /> : <Recipebook ownerId={profile.id} />}
         </>
       )}
     </div>

@@ -3,10 +3,11 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { BookOpen, Bookmark, CirclePlus, Home, Settings } from 'lucide-react'
 import { useMe } from '../features/auth/profiles'
 import { useFollowRequests } from '../features/social/follows'
+import { useParticipationRequests } from '../features/social/participation'
 
 export default function Layout() {
   const me = useMe()
-  const requests = useFollowRequests().data?.length ?? 0
+  const requests = (useFollowRequests().data?.length ?? 0) + (useParticipationRequests().data?.length ?? 0)
   const { pathname } = useLocation()
   // HashRouter no reinicia el scroll al cambiar de pantalla.
   useEffect(() => {

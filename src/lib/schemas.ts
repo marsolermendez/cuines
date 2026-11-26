@@ -57,25 +57,27 @@ export const entryFormSchema = z.object({
   cooked_on: z.string().refine(isDay, 'Elige el día en que lo cocinaste'),
   body: z.string().max(20000, 'El relato admite hasta 20 000 caracteres'),
   visibility: z.enum(['public', 'followers', 'private']),
-  ...recipeShape,
 })
 
+/** La receta sola, para cuando se escribe o edita una propia (no al enlazar una existente ni al ver una ajena). */
+export const recipeFormSchema = z.object(recipeShape)
+
 /** Solo la receta: «Guardar en Quiero cocinar» desde el formulario de entrada. */
-export const recipeDraftSchema = z.object(recipeShape).refine(hasRecipeContent, recipeContentError)
+export const recipeDraftSchema = recipeFormSchema.refine(hasRecipeContent, recipeContentError)
 
 const parseTags = (s: string) => [...new Set(s.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean))]
 
-export const draftFormSchema = z
-  .object({
-    body: z.string().max(20000, 'Las notas admiten hasta 20 000 caracteres'),
-    tags: z
-      .string()
-      .transform(parseTags)
-      .pipe(z.array(z.string().max(30, 'Cada etiqueta, máximo 30 caracteres')).max(10, 'Máximo 10 etiquetas')),
-    planned_for: z.string().refine((v) => v === '' || isDay(v), 'Fecha prevista no válida'),
-    ...recipeShape,
-  })
-  .refine(hasRecipeContent, recipeContentError)
+const draftShape = {
+  body: z.string().max(20000, 'Las notas admiten hasta 20 000 caracteres'),
+  tags: z
+    .string()
+    .transform(parseTags)
+    .pipe(z.array(z.string().max(30, 'Cada etiqueta, máximo 30 caracteres')).max(10, 'Máximo 10 etiquetas')),
+  planned_for: z.string().refine((v) => v === '' || isDay(v), 'Fecha prevista no válida'),
+}
+
+/** Notas, etiquetas y fecha prevista de un borrador (su receta se valida aparte si es editable). */
+export const draftNotesSchema = z.object(draftShape)
 
 // Mismos límites que los CHECK de comments y reports en la base de datos.
 export const commentSchema = z.string().trim().min(1, 'Escribe algo').max(1000, 'Máximo 1000 caracteres')

@@ -17,7 +17,7 @@ export default function Calendar({ authorId }: { authorId: string }) {
   const { data = [], isPending, isError } = useDiaryMonth(authorId, month)
 
   const byDay = new Map<string, typeof data>()
-  for (const e of data) byDay.set(e.cooked_on!, [...(byDay.get(e.cooked_on!) ?? []), e])
+  for (const e of data) byDay.set(e.cooked_on, [...(byDay.get(e.cooked_on) ?? []), e])
 
   const [y, m] = parseMonth(month)
   const lead = (new Date(y, m - 1, 1).getDay() + 6) % 7
@@ -90,6 +90,7 @@ export default function Calendar({ authorId }: { authorId: string }) {
               <li key={e.id}>
                 <Link to={`/e/${e.id}`} className="block rounded-lg border border-line bg-paper px-4 py-3 font-serif text-lg hover:shadow-sm">
                   {e.title}
+                  {e.shared && <span className="mt-0.5 block font-sans text-xs text-ink-soft">con {e.author_display_name}</span>}
                 </Link>
               </li>
             ))}

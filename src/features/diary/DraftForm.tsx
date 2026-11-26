@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { btnPrimary, btnSecondary, inputCls } from '../../components/ui'
-import { draftFormSchema } from '../../lib/schemas'
+import { draftNotesSchema, recipeDraftSchema } from '../../lib/schemas'
 import { useMe } from '../auth/profiles'
 import { PhotosField, usePhotos } from './PhotosField'
-import { RecipeFields, recipeInput, recipeValues } from './RecipeFields'
+import { RecipeFields, RecipeSummary, recipeInput, recipeValues } from './RecipeFields'
 import { hasRecipe, useEntry, type Loaded } from './queries'
 import { saveEntry, useSaver } from './save'
 
@@ -32,18 +32,24 @@ function DraftFormBody({ existing }: { existing?: Loaded }) {
   const [plannedFor, setPlannedFor] = useState(existing?.planned_for ?? '')
   const photos = usePhotos(existing?.entry_photos ?? [])
   const { saving, error, setError, progress, run } = useSaver()
+  // Un borrador creado con «Guardar para cocinar» enlaza una receta de otra persona: se ve, pero no se edita aquí.
+  const recipeIsMine = !existing || existing.recipes.owner_id === me.id
 
   function save(e: FormEvent) {
     e.preventDefault()
-    const parsed = draftFormSchema.safeParse({ body: notes, tags, planned_for: plannedFor, ...recipeInput(recipe) })
+    const parsed = draftNotesSchema.safeParse({ body: notes, tags, planned_for: plannedFor })
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? 'Revisa los datos')
+    const recipeParsed = recipeIsMine ? recipeDraftSchema.safeParse(recipeInput(recipe)) : null
+    if (recipeParsed && !recipeParsed.success) return setError(recipeParsed.error.issues[0]?.message ?? 'Revisa la receta')
     const f = parsed.data
+    const r = recipeParsed?.success ? recipeParsed.data : undefined
+    const recipeFields = r && { title: r.recipe_title, source_url: r.source_url || null, ingredients: r.ingredients, steps: r.steps }
     void run(
       (onProgress) =>
         saveEntry({
           authorId: me.id,
           existing: existing && { id: existing.id, recipeId: existing.recipes.id, photos: existing.entry_photos },
-          recipe: { title: f.recipe_title, source_url: f.source_url || null, ingredients: f.ingredients, steps: f.steps },
+          recipe: recipeFields,
           entry: {
             status: 'draft',
             visibility: 'private',
@@ -67,7 +73,14 @@ function DraftFormBody({ existing }: { existing?: Loaded }) {
     <form onSubmit={save} className="grid gap-8">
       <h2 className="font-serif text-2xl font-medium">{existing ? 'Editar receta guardada' : 'Quiero cocinar'}</h2>
 
-      <RecipeFields value={recipe} onChange={setRecipe} titlePlaceholder="Kebab casero" />
+      {recipeIsMine ? (
+        <RecipeFields value={recipe} onChange={setRecipe} titlePlaceholder="Kebab casero" />
+      ) : (
+        <section className="grid gap-3">
+          <h3 className="font-serif text-lg font-medium">Receta</h3>
+          <RecipeSummary recipe={existing.recipes} note="Es una receta de otra persona: solo la edita quien la creó." />
+        </section>
+      )}
 
       <section className="grid gap-4">
         <label className="grid gap-1 text-sm">

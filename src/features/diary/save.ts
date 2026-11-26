@@ -16,7 +16,13 @@ type SaveOptions = {
   authorId: string
   /** Entrada que ya existe (editar una publicada o convertir un borrador). Sin ella se crea una nueva. */
   existing?: { id: string; recipeId: string; photos: ExistingPhoto[] }
-  recipe: RecipeFields
+  /**
+   * Receta nueva, o los cambios a una propia. Al editar, sin ella no se toca la receta (es de otra persona).
+   * Al crear es obligatoria salvo que se enlace una existente con `linkRecipeId`.
+   */
+  recipe?: RecipeFields
+  /** Al crear, enlaza una receta que ya existe («Cocinar otra vez», «una que ya tengo») en vez de crear otra. */
+  linkRecipeId?: string
   entry: EntryFields
   /** De las fotos que ya tenía, las que se conservan; y los archivos nuevos por subir. */
   kept: ExistingPhoto[]
@@ -32,7 +38,9 @@ type SaveOptions = {
  */
 export async function saveEntry(o: SaveOptions): Promise<string> {
   const entryId = o.existing?.id ?? crypto.randomUUID()
-  const recipeId = o.existing?.recipeId ?? crypto.randomUUID()
+  const recipeId = o.existing?.recipeId ?? o.linkRecipeId ?? crypto.randomUUID()
+  // Solo se borra al deshacer una receta que se acaba de crear aquí, nunca una enlazada.
+  const createdRecipe = !o.existing && !o.linkRecipeId
   const uploaded: string[] = []
   let photosSaved = false
   try {
@@ -40,10 +48,13 @@ export async function saveEntry(o: SaveOptions): Promise<string> {
     const rows = await uploadPhotos(o.added, positions, o.authorId, entryId, uploaded, (n) => o.onProgress?.(n, o.added.length))
 
     if (o.existing) {
-      await check(supabase.from('recipes').update(o.recipe).eq('id', recipeId))
+      if (o.recipe) await check(supabase.from('recipes').update(o.recipe).eq('id', recipeId))
       await check(supabase.from('entries').update(o.entry).eq('id', entryId))
     } else {
-      await check(supabase.from('recipes').insert({ id: recipeId, owner_id: o.authorId, ...o.recipe }))
+      if (createdRecipe) {
+        if (!o.recipe) throw new Error('Falta la receta')
+        await check(supabase.from('recipes').insert({ id: recipeId, owner_id: o.authorId, ...o.recipe }))
+      }
       await check(supabase.from('entries').insert({ id: entryId, author_id: o.authorId, recipe_id: recipeId, ...o.entry }))
     }
 
@@ -59,7 +70,7 @@ export async function saveEntry(o: SaveOptions): Promise<string> {
       // Borrar la entrada borra sus fotos en cascada.
       if (!o.existing) {
         await supabase.from('entries').delete().eq('id', entryId)
-        await supabase.from('recipes').delete().eq('id', recipeId)
+        if (createdRecipe) await supabase.from('recipes').delete().eq('id', recipeId)
       }
       await removePhotoFiles(uploaded)
     }
@@ -103,4 +114,18 @@ export function useSaver() {
   }
 
   return { saving, error, setError, progress, run }
+}
+
+/**
+ * Etiqueta y quita personas de una entrada ya guardada («cocinar con alguien»). Devuelve false si algo falló:
+ * la entrada ya existe, así que no se deshace nada; se puede repetir editándola.
+ */
+export async function syncParticipants(entryId: string, add: string[], remove: string[]): Promise<boolean> {
+  try {
+    if (remove.length) await check(supabase.from('entry_participants').delete().eq('entry_id', entryId).in('user_id', remove))
+    if (add.length) await check(supabase.from('entry_participants').insert(add.map((user_id) => ({ entry_id: entryId, user_id }))))
+    return true
+  } catch {
+    return false
+  }
 }

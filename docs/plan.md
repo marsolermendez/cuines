@@ -289,3 +289,14 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **Me gusta con `likes(user_id)`:** de ahí salen el recuento y si le di yo (un filtro sobre una relación con alias no funciona en llamadas RPC). Techo: miles de likes en una entrada traerían miles de ids; entonces se pasa a un recuento en SQL.
 - **Los tests usan el dominio `@pgtap.test`** para no chocar con cuentas reales de desarrollo.
 
+**Fase 5**
+- **Contadores = lo que ves tú.** `recipe_stats` es `SECURITY INVOKER`: pasa por la RLS de `entries`, así que no cuenta borradores, ni entradas privadas, ni de quien no sigues. Las personas etiquetadas no suman como personas (solo las autoras).
+- **`save_as_draft` enlaza, no copia,** y es idempotente (devuelve el borrador que ya tuvieras). Como también es invoker, la RLS impide guardar una receta que no ves. En la página de la receta el aviso trae «Deshacer», que borra solo el borrador.
+- **Una receta ajena no se edita:** un borrador o una entrada que enlazan la receta de otra persona la muestran de solo lectura (la edita quien la creó). No hay pantalla propia para editar una receta; se edita desde cualquiera de sus entradas o borradores. «Una que ya existe» busca entre las recetas que puedo ver.
+- **`diary_items` (vista `security_invoker`)** une las entradas que escribió una persona con aquellas donde está etiquetada y aceptó (`shared`, `author_*`). Alimenta la línea temporal, el calendario y el recetario. Al ser vista, los tipos generados lo marcan todo como nulo: se afinan con `overrideTypes`.
+- **Etiquetar = compartir.** `is_participant` ya no es un stub: la persona etiquetada (pendiente o aceptada) lee la entrada aunque sea privada, pero solo mientras esté publicada (`can_read_entry` lo exige). Solo la autora etiqueta, solo en publicadas, no a sí misma, con tope de 10 personas por entrada (sin tope sería una forma barata de enviar una entrada a mucha gente). La persona etiquetada acepta (solo a `accepted`) o se sale; la autora quita. El estado nace `pending`: el cliente no lo escribe.
+- **Quien lee ve a quienes aceptaron** («cocinado con…»); las pendientes solo las ven las dos partes. Un tercero no ve etiquetas de entradas que no puede leer.
+- **Etiquetar es best-effort tras guardar:** la entrada ya existe, así que si falla se avisa y se puede repetir editándola (no se deshace la entrada).
+- **Recetario con techo de 1000 filas** (límite de PostgREST); con más veces cocinadas habría que agrupar en SQL.
+- Textos de la interfaz sin género (por ejemplo «Te etiquetaron…», «Te damos la bienvenida…»).
+

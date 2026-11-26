@@ -32,7 +32,7 @@ export default function Timeline({ authorId }: { authorId: string }) {
   // Agrupadas por mes; ya llegan ordenadas de la más reciente a la más antigua.
   const months: { month: string; items: typeof entries }[] = []
   for (const e of entries) {
-    const month = e.cooked_on!.slice(0, 7)
+    const month = e.cooked_on.slice(0, 7)
     const last = months[months.length - 1]
     if (last?.month === month) last.items.push(e)
     else months.push({ month, items: [e] })
@@ -45,7 +45,7 @@ export default function Timeline({ authorId }: { authorId: string }) {
           <h3 className="mb-3 font-serif text-lg font-medium text-ink-soft">{formatMonth(month)}</h3>
           <div className="grid gap-4">
             {items.map((e) => (
-              <EntryCard key={e.id} entry={e} urls={urls} showVisibility={isMe} />
+              <EntryCard key={e.id} entry={e} urls={urls} showVisibility={isMe && !e.shared} sharedBy={e.shared ? e.author_display_name : undefined} />
             ))}
           </div>
         </section>

@@ -1,39 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Avatar from '../../components/Avatar'
 import { inputCls } from '../../components/ui'
-import { supabase } from '../../lib/supabase'
-import { useMe } from '../auth/profiles'
+import { usePeopleSearch } from './usePeopleSearch'
 
 /** Buscar personas por nombre o @usuario para abrir su diario y seguirlas. */
 export default function PeopleSearch() {
-  const me = useMe()
   const [text, setText] = useState('')
-  const [q, setQ] = useState('')
-
-  // Espera a que se deje de escribir para no lanzar una consulta por tecla.
-  useEffect(() => {
-    const t = setTimeout(() => setQ(text.trim().replace(/^@/, '').replace(/[%,()*\\]/g, ' ').trim()), 300)
-    return () => clearTimeout(t)
-  }, [text])
-
-  const { data: people, isFetching } = useQuery({
-    queryKey: ['people', q],
-    enabled: q.length >= 2,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, username, display_name, avatar_url, is_private')
-        .not('username', 'is', null)
-        .neq('id', me.id)
-        .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
-        .limit(8)
-      if (error) throw error
-      return data
-    },
-  })
+  const { q, people, isFetching } = usePeopleSearch(text)
 
   return (
     <div>
