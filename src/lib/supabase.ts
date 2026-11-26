@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import type { Database } from './database.types'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -8,4 +9,4 @@ if (!url || !anonKey) {
 }
 
 // PKCE: el código de Google vuelve en ?code=, compatible con HashRouter.
-export const supabase = createClient(url, anonKey, { auth: { flowType: 'pkce' } })
+export const supabase = createClient<Database>(url, anonKey, { auth: { flowType: 'pkce' } })

@@ -1,0 +1,1 @@
+-- Datos de prueba para `npm run db:reset`. Se irán añadiendo con cada fase.

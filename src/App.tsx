@@ -1,13 +1,10 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
-import { BookOpen, Bookmark, CirclePlus, Home, Settings } from 'lucide-react'
-
-const tabs = [
-  { to: '/', label: 'Inicio', icon: Home, end: true },
-  { to: '/draft', label: 'Quiero cocinar', icon: Bookmark },
-  { to: '/new', label: 'Nueva', icon: CirclePlus },
-  { to: '/me', label: 'Mi diario', icon: BookOpen },
-  { to: '/settings', label: 'Ajustes', icon: Settings },
-]
+import { Route, Routes } from 'react-router-dom'
+import Layout from './components/Layout'
+import LoginPage from './features/auth/LoginPage'
+import OnboardingPage from './features/auth/OnboardingPage'
+import ProfilePage from './features/auth/ProfilePage'
+import RequireAuth from './features/auth/RequireAuth'
+import SettingsPage from './features/auth/SettingsPage'
 
 function Stub({ title }: { title: string }) {
   return <h2 className="font-serif text-2xl font-medium">{title}</h2>
@@ -15,35 +12,19 @@ function Stub({ title }: { title: string }) {
 
 export default function App() {
   return (
-    <div className="mx-auto min-h-screen max-w-4xl md:flex">
-      <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-line bg-paper md:static md:w-52 md:shrink-0 md:flex-col md:gap-1 md:border-0 md:bg-transparent md:p-4">
-        <p className="hidden px-3 py-4 font-serif text-2xl font-medium md:block">Cuines</p>
-        {tabs.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-0.5 px-1 py-2 text-[11px] leading-tight md:flex-none md:flex-row md:gap-3 md:rounded-lg md:px-3 md:py-2 md:text-sm ${
-                isActive ? 'text-clay-soft md:bg-paper' : 'text-ink-soft'
-              }`
-            }
-          >
-            <Icon className="size-5" aria-hidden="true" />
-            {label}
-          </NavLink>
-        ))}
-      </nav>
-      <main className="w-full max-w-[680px] px-4 pb-24 pt-6 md:pb-6">
-        <Routes>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RequireAuth />}>
+        <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route element={<Layout />}>
           <Route path="/" element={<Stub title="Inicio" />} />
           <Route path="/draft" element={<Stub title="Quiero cocinar" />} />
           <Route path="/new" element={<Stub title="Nueva entrada" />} />
-          <Route path="/me" element={<Stub title="Mi diario" />} />
-          <Route path="/settings" element={<Stub title="Ajustes" />} />
+          <Route path="/u/:username" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Stub title="No encontrada" />} />
-        </Routes>
-      </main>
-    </div>
+        </Route>
+      </Route>
+    </Routes>
   )
 }
