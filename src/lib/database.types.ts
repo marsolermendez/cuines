@@ -45,6 +45,12 @@ isOneToOne: false
       foreignKeyName: "comments_entry_id_fkey"
       columns: ["entry_id"]
 isOneToOne: false
+      referencedRelation: "diary_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "comments_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
       referencedRelation: "entries"
       referencedColumns: ["id"]
     }
@@ -75,6 +81,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"entry_participants": {
+                  Row: {
+                    "created_at": string,"entry_id": string,"status": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"entry_id": string,"status"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"entry_id"?: string,"status"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "entry_participants_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "diary_items"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_participants_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "entries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entry_participants_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"entry_photos": {
                   Row: {
                     "entry_id": string,"height": number,"id": string,"path": string,"placeholder": string,"position": number,"thumb_path": string,"width": number
@@ -88,6 +126,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "entry_photos_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "diary_items"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "entry_photos_entry_id_fkey"
       columns: ["entry_id"]
 isOneToOne: false
@@ -134,6 +178,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "likes_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "diary_items"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "likes_entry_id_fkey"
       columns: ["entry_id"]
 isOneToOne: false
@@ -210,7 +260,27 @@ isOneToOne: false
                 }
           }
           Views: {
-            [_ in never]: never
+            "diary_items": {
+                  Row: {
+                    "author_display_name": string,"author_id": string,"author_username": string | null,"body": string,"cooked_on": string | null,"created_at": string,"diary_owner": string | null,"id": string,"published_at": string | null,"recipe_id": string,"shared": boolean | null,"tags": (string)[],"title": string | null,"visibility": string
+                  }
+                  ComputedFields: never
+                  Relationships: [
+                    {
+      foreignKeyName: "entries_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entries_recipe_id_fkey"
+      columns: ["recipe_id"]
+isOneToOne: false
+      referencedRelation: "recipes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                }
           }
           Functions: {
             "can_read_entry":
@@ -250,6 +320,14 @@ isOneToOne: false
                            },
 "recipe_has_readable_entry":
 { Args: { "rid": string }; Returns: boolean
+                           },
+"recipe_stats":
+{ Args: { "rid": string }; Returns: {
+              "people": number,"times": number
+            }[]
+                           },
+"save_as_draft":
+{ Args: { "rid": string }; Returns: string
                            }
           }
           Enums: {
