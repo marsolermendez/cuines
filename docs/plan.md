@@ -308,3 +308,10 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **Revisión a 375, 768 y 1280 px:** sin desbordes horizontales en las 14 pantallas a 375 px; la barra lateral aparece desde 768 px y la lectura se queda en 680 px.
 - **Endurecimiento de producción:** auditoría directa de la base de datos (RLS en todas las tablas, `anon` sin privilegios, vista `security_invoker`, bucket `photos` privado). Se cierra la función `rls_auto_enable` que crea el panel de Supabase, invocable por `anon`, y se revoca EXECUTE de las funciones de disparador propias.
 
+**Lista de acceso (después de la Fase 6)**
+- **Tabla `allowed_emails` + trigger `BEFORE INSERT` en `auth.users`:** solo los correos de la lista pueden crear cuenta. Es independiente de Google: aunque la pantalla de consentimiento esté publicada, no se abre el registro. La tabla no es accesible desde la API (RLS sin políticas y sin privilegios).
+- **El filtro solo afecta a los altas del servicio de Auth** (`session_user = 'supabase_auth_admin'`). Migraciones, tests y SQL del panel pasan sin más; así los tests y el seed no necesitan permiso.
+- **La decisión vive en `email_has_access(text)`** (comparación exacta, sin distinguir mayúsculas ni espacios alrededor), que se prueba en pgTAP. El rechazo real lo dispara la conexión del Auth, que los tests no pueden suplantar (`postgres` no puede asumir ese rol): se comprueba contra el Auth local con `curl`, como se describe en el README.
+- **No echa a quien ya tiene cuenta.** Para eso, además de quitarlo de la lista, se borra o bloquea en *Authentication → Users*.
+- **Los correos reales no van en ninguna migración** (repo público): se cargan aparte. La pantalla de entrada explica el rechazo.
+

@@ -53,7 +53,37 @@ El secreto de Google nunca va en el repo ni en el código del cliente.
 
 El proyecto de producción (Google activado, **Email desactivado** y URLs de redirección) lo aplica Terraform: ver [infra/README.md](infra/README.md). Lo único manual es crear el cliente OAuth y pasar su ID y secreto a `infra/.env`. Como URI de redireccionamiento de producción usa el output `google_oauth_redirect_uri` de Terraform.
 
-**Pantalla de consentimiento en producción.** Mientras esté en modo *Pruebas*, solo entran las cuentas añadidas como usuarios de prueba (máximo 100). Para abrir la app a cualquiera: *Google Auth Platform → Público → Publicar aplicación*. Con los permisos básicos (email, perfil, openid) no hace falta verificación de Google.
+**Pantalla de consentimiento en producción.** Mientras esté en modo *Pruebas*, solo entran las cuentas añadidas como usuarios de prueba (máximo 100). Para abrirla a cualquier cuenta de Google: *Google Auth Platform → Público → Publicar aplicación*; con los permisos básicos (email, perfil, openid) no hace falta verificación de Google. **Publicarla no abre Cuines a nadie:** quién puede crear cuenta lo decide la lista de acceso de abajo, que es independiente de Google.
+
+## Quién puede entrar
+
+Cuines es **por invitación**: solo pueden crear una cuenta los correos de la tabla `allowed_emails`. Lo hace cumplir la base de datos (un trigger sobre `auth.users`), no la interfaz. La tabla no es accesible desde la API, ni siquiera con sesión: se gestiona desde el panel de Supabase (*Table Editor* o *SQL Editor*).
+
+```sql
+-- dar acceso (el correo exacto de la cuenta de Google, en minúsculas)
+insert into public.allowed_emails (email, note) values ('persona@gmail.com', 'quién es');
+
+-- ver la lista
+select * from public.allowed_emails order by created_at;
+
+-- quitar el permiso de alta
+delete from public.allowed_emails where email = 'persona@gmail.com';
+```
+
+- **Quitar a alguien de la lista no echa a quien ya tiene cuenta:** solo impide altas nuevas. Para cerrarle el acceso, además bórrala o bloquéala en *Authentication → Users*.
+- Quien intenta entrar sin estar en la lista ve «Esta cuenta de Google todavía no tiene acceso a Cuines».
+- Los correos reales **no se versionan** (el repo es público): en producción se cargan aparte. En local, `supabase/seed.sql` deja pasar tres correos de prueba inventados (`@test.local`).
+- El filtro solo afecta a los altas que hace el servicio de Auth (la conexión `supabase_auth_admin`); el SQL de administración, las migraciones y los tests no pasan por él.
+- Si alguien de la lista es rechazado, comprueba que su correo coincide exacto con el de su cuenta de Google.
+
+Para comprobar el cableado contra el Auth local (los tests pgTAP no pueden suplantar al servicio de Auth):
+
+```bash
+set -a && source .env.local && set +a
+curl -X POST "$VITE_SUPABASE_URL/auth/v1/signup" -H "apikey: $VITE_SUPABASE_ANON_KEY" \
+  -H 'Content-Type: application/json' -d '{"email":"intruso@test.local","password":"test-password-123"}'
+# debe responder 500 con "Este correo no tiene acceso a Cuines"
+```
 
 ## Scripts
 
@@ -65,7 +95,7 @@ El proyecto de producción (Google activado, **Email desactivado** y URLs de red
 | `npm run db:start` | Arranca Supabase local (Docker) |
 | `npm run db:reset` | Recrea la base local con migraciones y `seed.sql` |
 | `npm run db:types` | Regenera `src/lib/database.types.ts` desde la base local |
-| `npm run db:test` | Ejecuta los tests pgTAP de privacidad (199, con una matriz de actores) |
+| `npm run db:test` | Ejecuta los tests pgTAP de privacidad (217, con una matriz de actores) |
 
 ## Despliegue en GitHub Pages
 

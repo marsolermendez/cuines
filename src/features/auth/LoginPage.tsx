@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { btnSecondary } from '../../components/ui'
@@ -16,10 +16,30 @@ function GoogleLogo() {
   )
 }
 
+/**
+ * Si el login falla, Supabase vuelve al sitio con `?error=…&error_description=…`. El caso que importa es la lista de
+ * acceso (tabla allowed_emails): la cuenta de Google es válida pero su correo no tiene acceso a Cuines.
+ */
+function loginErrorFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search)
+  if (!params.has('error')) return null
+  const detail = params.get('error_description') ?? ''
+  return /no tiene acceso|saving new user/i.test(detail)
+    ? 'Esta cuenta de Google todavía no tiene acceso a Cuines. Pide acceso a quien lo gestiona.'
+    : 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.'
+}
+
 export default function LoginPage() {
   const { session, loading } = useSession()
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(loginErrorFromUrl)
   const [busy, setBusy] = useState(false)
+
+  // Quita el error de la URL para que recargar no repita el aviso.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('error')) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.hash)
+    }
+  }, [])
 
   if (loading) return <Splash />
   if (session) return <Navigate to="/" replace />
