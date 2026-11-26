@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Uso: infra/tf <bootstrap|stack> <comando de terraform...>      p. ej.  infra/tf stack plan
+#
+# Ejecuta Terraform con credenciales PERSONALES y comprueba antes que no se mezclan con las de Hike:
+#  - gcloud/ADC viven en una carpeta aparte (CLOUDSDK_CONFIG), no en la config de trabajo.
+#  - el login de Google tiene que ser la cuenta TF_GOOGLE_ACCOUNT.
+#  - la cuenta activa de `gh` tiene que ser la propietaria del repo (stack).
+set -eo pipefail
+
+root="$(cd "$(dirname "$0")" && pwd)"
+stack="$1"
+shift || true
+if [[ "$stack" != "bootstrap" && "$stack" != "stack" ]] || [[ $# -eq 0 ]]; then
+  echo "Uso: infra/tf <bootstrap|stack> <comando de terraform>" >&2
+  exit 2
+fi
+
+[[ -f "$root/.env" ]] || { echo "Falta infra/.env: copia infra/.env.example y rellénalo." >&2; exit 1; }
+set -a
+# shellcheck disable=SC1091
+source "$root/.env"
+set +a
+
+for v in TF_VAR_gcp_project_id TF_GOOGLE_ACCOUNT; do
+  [[ -n "${!v}" ]] || { echo "Falta $v en infra/.env" >&2; exit 1; }
+done
+
+# Credenciales de Google aisladas de la config de trabajo, y sin proyectos por defecto heredados.
+export CLOUDSDK_CONFIG="${CLOUDSDK_CONFIG:-$HOME/.config/gcloud-cuines}"
+unset GOOGLE_PROJECT GOOGLE_CLOUD_PROJECT CLOUDSDK_CORE_PROJECT GOOGLE_CREDENTIALS
+# El proveedor de Google de Terraform NO respeta CLOUDSDK_CONFIG y cae en ~/.config/gcloud (el login de Hike):
+# se le indica el archivo personal de forma explícita.
+export GOOGLE_APPLICATION_CREDENTIALS="$CLOUDSDK_CONFIG/application_default_credentials.json"
+
+if [[ ! -f "$CLOUDSDK_CONFIG/application_default_credentials.json" ]]; then
+  echo "Falta el login personal de Google. Ejecuta (y entra con la cuenta personal):" >&2
+  echo "  CLOUDSDK_CONFIG=\"$CLOUDSDK_CONFIG\" gcloud auth application-default login" >&2
+  exit 1
+fi
+
+token="$(gcloud auth application-default print-access-token)"
+email="$(curl -fsS https://oauth2.googleapis.com/tokeninfo --data-urlencode "access_token=$token" \
+  | python3 -c 'import sys, json; print(json.load(sys.stdin).get("email", ""))')"
+unset token
+if [[ "$(echo "$email" | tr '[:upper:]' '[:lower:]')" != "$(echo "$TF_GOOGLE_ACCOUNT" | tr '[:upper:]' '[:lower:]')" ]]; then
+  echo "El login de Google es '$email' y se esperaba TF_GOOGLE_ACCOUNT. Repite el login con la cuenta personal." >&2
+  exit 1
+fi
+
+if [[ "$stack" == "stack" ]]; then
+  owner="${TF_VAR_github_owner:-marsolermendez}"
+  gh_user="$(gh api user --jq .login)"
+  if [[ "$gh_user" != "$owner" ]]; then
+    echo "La cuenta activa de gh es '$gh_user' y el repo es de '$owner'. Ejecuta: gh auth switch -u $owner" >&2
+    exit 1
+  fi
+  GITHUB_TOKEN="$(gh auth token)"
+  export GITHUB_TOKEN
+  [[ -n "${SUPABASE_ACCESS_TOKEN:-}" ]] || { echo "Falta SUPABASE_ACCESS_TOKEN en infra/.env" >&2; exit 1; }
+fi
+
+dir="$root/$stack"
+if [[ "$stack" == "stack" && "$1" == "init" ]]; then
+  # El bucket del state sale del ID del proyecto: así no queda escrito en el código.
+  shift
+  exec terraform -chdir="$dir" init -backend-config="bucket=${TF_VAR_gcp_project_id}-tfstate" "$@"
+fi
+exec terraform -chdir="$dir" "$@"

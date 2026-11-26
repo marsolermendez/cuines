@@ -8,3 +8,9 @@ supabase/.temp
 supabase/.branches
 .DS_Store
 .claude/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log

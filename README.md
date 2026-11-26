@@ -32,6 +32,27 @@ npm run dev
 
 La app abre en http://localhost:5173. La clave `anon` es pública por diseño; la `service_role` no se usa nunca en el cliente.
 
+## Login con Google
+
+Cuines solo permite entrar con Google. Hace falta un cliente OAuth (gratis, unos 10 minutos). Créalo con tu cuenta de Google personal:
+
+1. En [Google Cloud Console](https://console.cloud.google.com/) crea un proyecto (por ejemplo `cuines`).
+2. *APIs y servicios → Pantalla de consentimiento de OAuth*: tipo **Externo**, nombre de la app `Cuines`, tu correo de contacto. Los permisos por defecto (email, perfil, openid) bastan. Mientras esté en modo *Pruebas*, añade tu cuenta como usuario de prueba; en *Producción* puede entrar cualquiera.
+3. *Credenciales → Crear credenciales → ID de cliente de OAuth → Aplicación web*. En **URI de redireccionamiento autorizados** añade:
+   - local: `http://127.0.0.1:54321/auth/v1/callback`
+   - producción: `https://<ref-de-tu-proyecto>.supabase.co/auth/v1/callback`
+4. Copia `supabase/.env.example` a `supabase/.env` (está en `.gitignore`), pega el *ID de cliente* y el *secreto* y reinicia Supabase:
+
+```bash
+npx supabase stop && npm run db:start
+```
+
+El secreto de Google nunca va en el repo ni en el código del cliente.
+
+### Producción (Supabase cloud)
+
+El proyecto de producción (Google activado, **Email desactivado** y URLs de redirección) lo aplica Terraform: ver [infra/README.md](infra/README.md). Lo único manual es crear el cliente OAuth y pasar su ID y secreto a `infra/.env`. Como URI de redireccionamiento de producción usa el output `google_oauth_redirect_uri` de Terraform.
+
 ## Scripts
 
 | Comando | Qué hace |
@@ -46,16 +67,14 @@ La app abre en http://localhost:5173. La clave `anon` es pública por diseño; l
 
 ## Despliegue en GitHub Pages
 
-1. Crea un repositorio **público** en GitHub y sube el código a `main`.
-2. En *Settings → Pages*, elige *Source: GitHub Actions*.
-3. En *Settings → Secrets and variables → Actions → Variables*, crea `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` con los valores de tu proyecto de Supabase (son públicos, van como Variables, no como Secrets).
-4. Cada push a `main` ejecuta [.github/workflows/deploy.yml](.github/workflows/deploy.yml) y publica en `https://<usuario>.github.io/<repo>/`.
+El repositorio, GitHub Pages y las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` los gestiona Terraform (ver [infra/README.md](infra/README.md)); el repositorio tiene que ser **público** para que Pages sea gratis. Cada push a `main` ejecuta [.github/workflows/deploy.yml](.github/workflows/deploy.yml) y publica en `https://<usuario>.github.io/<repo>/`.
 
 Las rutas llevan `#/` (por ejemplo `/#/e/123`) porque Pages no hace fallback a `index.html`.
 
 ## Estructura
 
 ```
+infra/          Terraform (GCP, Supabase, GitHub)
 src/            app React (router, componentes, features)
 src/lib/        cliente de Supabase, tipos generados, utilidades
 supabase/       configuración, migraciones, seed y tests pgTAP
@@ -65,4 +84,4 @@ docs/           plan del MVP
 
 ## Estado
 
-Fase 0 (esqueleto) lista. Siguiente: Fase 1, login con Google y perfil. Fases en [docs/plan.md](docs/plan.md#7-fases-cada-una-termina-en-algo-probable).
+Fases 0 (esqueleto) y 1 (login con Google, onboarding y perfil) hechas. Siguiente: Fase 2, diario con fotos, recetas y calendario. Fases en [docs/plan.md](docs/plan.md#7-fases-cada-una-termina-en-algo-probable).

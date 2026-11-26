@@ -215,7 +215,7 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 | **3** | **Borradores**: Quiero cocinar (etiquetas, búsqueda, orden, fecha prevista), **Cocinar ahora**, guardar para después | Un borrador no sale en `/u/:username` ni en consultas de otro usuario (SQL y navegador); la conversión conserva receta y fotos |
 | **4** | **Social**: seguir (con aprobación en privados), feed, perfiles públicos, likes, comentarios, reportar y borrar; pgTAP ampliada | Dos navegadores con dos cuentas: solicitud pendiente → aceptada → aparece en el feed; comentario reportado crea fila en `reports` |
 | **5** | **Recetas con identidad**: página `/r/:id`, **Cocinar otra vez**, selector "una que ya tengo", contadores (`recipe_stats`), **recetario** agrupado, **guardar de otros como borrador**; y **cocinar con alguien** | Cocino la misma receta 3 días con relatos distintos y sale una sola vez en el recetario con "×3"; B guarda mi receta y la cocina: la receta marca "2 personas"; C no cuenta entradas privadas ni puede guardar una receta que no ve; A etiqueta a B, B acepta y la ve en su diario (solo lectura) y se puede salir |
-| **6** | Pulido y despliegue: skeletons, estados vacíos, errores, revisión a 375/768/1280 px, accesibilidad básica (alt, foco), Supabase cloud + Google OAuth en producción, deploy a GitHub Pages | URL `github.io` pública; recorrido completo en móvil y escritorio |
+| **6** | Pulido y despliegue: skeletons, estados vacíos, errores, revisión a 375/768/1280 px, accesibilidad básica (alt, foco), Supabase cloud, repo y Pages con **Terraform** (`infra/`), Google OAuth en producción, deploy a GitHub Pages | URL `github.io` pública; recorrido completo en móvil y escritorio |
 
 ---
 
