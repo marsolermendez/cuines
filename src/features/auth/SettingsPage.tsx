@@ -4,6 +4,7 @@ import { btnPrimary, btnSecondary, inputCls } from '../../components/ui'
 import { resizeToJpeg } from '../../lib/images'
 import { profileFormSchema } from '../../lib/schemas'
 import { supabase } from '../../lib/supabase'
+import FollowRequests from '../social/FollowRequests'
 import { useMe, useUpdateProfile } from './profiles'
 
 export default function SettingsPage() {
@@ -87,6 +88,7 @@ export default function SettingsPage() {
           )}
         </div>
       </form>
+      <FollowRequests />
       <button className={`${btnSecondary} mt-10`} onClick={() => supabase.auth.signOut()}>
         Cerrar sesión
       </button>

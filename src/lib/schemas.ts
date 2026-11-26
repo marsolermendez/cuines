@@ -76,3 +76,7 @@ export const draftFormSchema = z
     ...recipeShape,
   })
   .refine(hasRecipeContent, recipeContentError)
+
+// Mismos límites que los CHECK de comments y reports en la base de datos.
+export const commentSchema = z.string().trim().min(1, 'Escribe algo').max(1000, 'Máximo 1000 caracteres')
+export const reportReasonSchema = z.string().trim().min(1, 'Cuéntanos el motivo').max(300, 'Máximo 300 caracteres')

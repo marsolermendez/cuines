@@ -7,6 +7,8 @@ import ProgressiveImage from '../../components/ProgressiveImage'
 import { btnSecondary } from '../../components/ui'
 import { formatDay } from '../../lib/dates'
 import { useMe } from '../auth/profiles'
+import Comments from '../social/Comments'
+import LikeButton from '../social/LikeButton'
 import { useSignedUrls } from './photos'
 import { useEntry } from './queries'
 import { deleteEntry } from './save'
@@ -86,6 +88,10 @@ export default function EntryPage() {
 
       {entry.body && <div className="mt-8 whitespace-pre-line text-[17px] leading-8">{entry.body}</div>}
 
+      <div className="mt-6">
+        <LikeButton entryId={entry.id} initialLiked={entry.likes.some((l) => l.user_id === me.id)} initialCount={entry.likes.length} />
+      </div>
+
       {recipe && (
         <section className="mt-10 rounded-xl border border-line bg-paper p-5">
           <h3 className="font-serif text-xl font-medium">{recipe.title}</h3>
@@ -118,6 +124,8 @@ export default function EntryPage() {
           )}
         </section>
       )}
+
+      <Comments entryId={entry.id} entryAuthorId={entry.author_id} />
 
       {mine && (
         <div className="mt-10 flex items-center gap-3">

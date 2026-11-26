@@ -40,6 +40,7 @@ export function useUpdateProfile() {
       if (error) throw error
       return data
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
+    // Pasar a público acepta las solicitudes pendientes en el servidor: se refresca también lo social.
+    onSuccess: () => Promise.all([queryClient.invalidateQueries({ queryKey: ['profile'] }), queryClient.invalidateQueries({ queryKey: ['diary'] })]),
   })
 }

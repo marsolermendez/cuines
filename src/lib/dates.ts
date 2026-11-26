@@ -45,3 +45,7 @@ export const formatMonth = (month: string) => {
 
 export const formatDay = (day: string, opts: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' }) =>
   cap(new Intl.DateTimeFormat('es', opts).format(localDate(day)))
+
+/** Un instante real (timestamptz), no una fecha de calendario: aquí sí se puede usar `new Date(string)`. */
+export const formatWhen = (iso: string) =>
+  new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso))

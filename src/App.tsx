@@ -9,6 +9,7 @@ import DraftForm from './features/diary/DraftForm'
 import DraftsPage from './features/diary/DraftsPage'
 import EntryForm from './features/diary/EntryForm'
 import EntryPage from './features/diary/EntryPage'
+import FeedPage from './features/social/FeedPage'
 
 function Stub({ title }: { title: string }) {
   return <h2 className="font-serif text-2xl font-medium">{title}</h2>
@@ -21,7 +22,7 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route element={<Layout />}>
-          <Route path="/" element={<Stub title="Inicio" />} />
+          <Route path="/" element={<FeedPage />} />
           <Route path="/draft" element={<DraftsPage />} />
           <Route path="/draft/new" element={<DraftForm />} />
           <Route path="/draft/:id" element={<DraftForm />} />

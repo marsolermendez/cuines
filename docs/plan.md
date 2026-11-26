@@ -278,3 +278,14 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **Un solo camino de escritura:** `saveEntry` (receta + entrada + fotos, con deshacer si falla) y `deleteEntry` los usan el formulario de entrada, el de borrador, «Guardar en Quiero cocinar» y las dos pantallas de borrado.
 - Un borrador abierto como entrada (`/e/:id`) redirige a `/draft/:id`; un borrador no se lee como historia.
 
+**Fase 4**
+- **`is_follower` deja de ser un stub:** `create or replace` lo implementa con la tabla `follows` (solo cuentan los seguimientos aceptados). Con eso «solo seguidores» y las entradas públicas de diarios privados funcionan sin tocar `can_read_entry` ni ninguna política de la Fase 2.
+- **El estado de un seguimiento lo decide el servidor** (trigger `BEFORE INSERT`): pendiente si el diario es privado, aceptado si no. El cliente no puede escribir `status` al insertar. Solo la persona seguida lo cambia, y solo a `accepted`; rechazar o dejar de seguir es borrar la fila. Al pasar un diario a público se aceptan las solicitudes pendientes (trigger en `profiles`).
+- **`follows` solo lo leen las dos partes**, así que no hay contadores de seguidores en el perfil (no se filtra el grafo social). Quien busca personas ve nombre y @usuario de cualquiera, también de diarios privados: es lo que permite solicitar seguirlos.
+- **Likes y comentarios heredan la privacidad de la entrada** (la subconsulta pasa por la RLS de `entries`); los borradores no admiten ninguno. Los comentarios no se editan. Borra quien lo escribió o la autora de la entrada.
+- **Reportes:** cada persona solo ve los suyos; la revisión se hace desde el panel de Supabase (no hay pantalla de moderación). Si el comentario se borra, su reporte se va con él (`on delete cascade`). No hay bloqueo de usuarios.
+- **`feed(p_before, p_limit)` es `SECURITY INVOKER`** y pagina por `published_at`; la RLS sigue decidiendo qué se puede leer de cada entrada.
+- **PostgREST y las tablas puente:** al existir `likes`, `comments` y `reports`, `entries ↔ profiles` también es una relación muchos a muchos y `profiles(...)` daba `300 Multiple Choices`. Se nombra la clave foránea (`profiles!entries_author_id_fkey`).
+- **Me gusta con `likes(user_id)`:** de ahí salen el recuento y si le di yo (un filtro sobre una relación con alias no funciona en llamadas RPC). Techo: miles de likes en una entrada traerían miles de ids; entonces se pasa a un recuento en SQL.
+- **Los tests usan el dominio `@pgtap.test`** para no chocar con cuentas reales de desarrollo.
+
