@@ -255,3 +255,17 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **Borradores compartidos/públicos:** se relaja el `CHECK` y se amplía el enum `visibility`.
 - **Previews al compartir enlaces:** función serverless con Open Graph.
 - **Variantes y fusión de recetas:** `forked_from_recipe_id` (copia con atribución) y "es la misma receta" para unir duplicados.
+
+## Notas de implementación (desvíos respecto al plan)
+
+**Fase 2**
+- **Políticas sin recursión.** `entries` consulta `recipes` al insertar y `recipes` consulta `entries` para saber si una receta es visible: Postgres lo rechaza (*infinite recursion in policy*). La regla de lectura vive en `can_read_entry(...)` y la política de `recipes` usa `recipe_has_readable_entry(...)`, `SECURITY DEFINER`, que lee `entries` sin pasar por su RLS.
+- **`is_follower` e `is_participant` son stubs que devuelven `false`** hasta las Fases 4 y 5 (aún no existen `follows` ni `entry_participants`). Lo «solo seguidores» lo ve únicamente su autora: falla cerrado. La Fase 4 y la 5 los sustituyen con `create or replace`.
+- **La vista `diary_items` no existe todavía:** sin participantes, el diario es `entries` filtrado por `author_id`. Se crea en la Fase 5.
+- **FK `entries.recipe_id` en `NO ACTION`, no `RESTRICT`.** Misma garantía (no se borra una receta con entradas) pero se comprueba al final de la sentencia, así un borrado de cuenta en cascada puede llevarse a la vez las entradas y sus recetas.
+- **`entry_photos` exige que la ruta cuelgue de `{autora}/{entrada}/`.** Sin eso, una entrada propia podría apuntar a la foto privada de otra persona y heredar su lectura en Storage (cubierto en `diary.test.sql`).
+- **Ids generados en el cliente** (`crypto.randomUUID()`): las fotos se suben antes de crear las filas, y si algo falla no queda una entrada a medias a la vista.
+- **Al quitar fotos, primero se borran las filas y luego los archivos** (el plan decía al revés): si falla a medias queda un archivo huérfano que nadie lee, en vez de una foto rota en el diario. Las filas se borran antes de insertar las nuevas porque `(entry_id, position)` es único.
+- **La caché de TanStack Query se vacía al cambiar de usuario** (`AuthProvider`): no distingue quién mira y enseñaba datos de la sesión anterior.
+- **Sin reordenar fotos ni visor a pantalla completa** (se quitan y se añaden; la miniatura abre la foto completa en otra pestaña). El selector «una que ya tengo» llega en la Fase 5.
+

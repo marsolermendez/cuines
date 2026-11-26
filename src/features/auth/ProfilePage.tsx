@@ -1,9 +1,15 @@
 import { Lock } from 'lucide-react'
-import { useParams } from 'react-router-dom'
+import { NavLink, useParams } from 'react-router-dom'
 import Avatar from '../../components/Avatar'
+import Calendar from '../diary/Calendar'
+import Timeline from '../diary/Timeline'
 import { useProfileByUsername } from './profiles'
 
-export default function ProfilePage() {
+const tab = ({ isActive }: { isActive: boolean }) =>
+  `border-b-2 px-3 py-2 text-sm ${isActive ? 'border-clay-soft text-ink' : 'border-transparent text-ink-soft hover:text-ink'}`
+
+/** Perfil = diario. El mismo diario se ve como línea temporal o como calendario mensual. */
+export default function ProfilePage({ view }: { view: 'timeline' | 'calendar' }) {
   const { username } = useParams()
   const { data: profile, isPending, isError } = useProfileByUsername(username)
 
@@ -24,7 +30,17 @@ export default function ProfilePage() {
         </div>
       </header>
       {profile.bio && <p className="mt-4 whitespace-pre-line">{profile.bio}</p>}
-      <p className="mt-10 text-ink-soft">Aquí irá el diario (Fase 2).</p>
+
+      <nav className="mb-6 mt-8 flex border-b border-line" aria-label="Vistas del diario">
+        <NavLink to={`/u/${profile.username}`} end className={tab}>
+          Línea temporal
+        </NavLink>
+        <NavLink to={`/u/${profile.username}/calendario`} className={tab}>
+          Calendario
+        </NavLink>
+      </nav>
+
+      {view === 'timeline' ? <Timeline authorId={profile.id} /> : <Calendar authorId={profile.id} />}
     </div>
   )
 }

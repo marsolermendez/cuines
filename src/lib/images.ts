@@ -6,7 +6,7 @@ type Options = { maxSide: number; quality?: number; square?: boolean }
  * `square` recorta al centro. Lanza si el navegador no sabe decodificar el archivo (p. ej. HEIC en Chrome).
  */
 export async function resizeToJpeg(
-  file: File,
+  file: Blob,
   { maxSide, quality = 0.82, square = false }: Options,
 ): Promise<{ blob: Blob; width: number; height: number }> {
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
