@@ -1,9 +1,15 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { BookOpen, Bookmark, CirclePlus, Home, Settings } from 'lucide-react'
 import { useMe } from '../features/auth/profiles'
 
 export default function Layout() {
   const me = useMe()
+  const { pathname } = useLocation()
+  // HashRouter no reinicia el scroll al cambiar de pantalla.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
   const tabs = [
     { to: '/', label: 'Inicio', icon: Home, end: true },
     { to: '/draft', label: 'Quiero cocinar', icon: Bookmark },
