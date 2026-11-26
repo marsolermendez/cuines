@@ -26,6 +26,30 @@ export function useFollowStatus(targetId: string | undefined) {
   })
 }
 
+/** A quién sigo y quién me sigue (solo solicitudes aceptadas). Una sola consulta: la RLS de `follows` solo deja ver
+ *  las filas donde participo, así que todo lo que vuelve ya es mío y solo hay que separar las dos direcciones. */
+export function useMyConnections() {
+  const uid = useSession().session?.user.id
+  return useQuery({
+    queryKey: ['diary', 'connections', uid],
+    enabled: !!uid,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('follows')
+        .select(
+          'follower_id, followee_id, follower:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url), followee:profiles!follows_followee_id_fkey(id, username, display_name, avatar_url)',
+        )
+        .eq('status', 'accepted')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return {
+        following: data.filter((f) => f.follower_id === uid).flatMap((f) => (f.followee ? [f.followee] : [])),
+        followers: data.filter((f) => f.followee_id === uid).flatMap((f) => (f.follower ? [f.follower] : [])),
+      }
+    },
+  })
+}
+
 /** Seguir (o solicitar seguir) y dejar de seguir (o cancelar la solicitud). El servidor decide el estado. */
 export function useToggleFollow(targetId: string) {
   const queryClient = useQueryClient()
