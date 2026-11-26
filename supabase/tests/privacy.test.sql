@@ -30,7 +30,10 @@ reset role;
 select set_config('request.jwt.claims', '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
 set local role authenticated;
 
-select is((select count(*)::int from public.profiles), 2, 'una persona autenticada ve todos los perfiles');
+-- Filtrado por los dos usuarios de este test: la base local puede tener otros usuarios reales.
+select is((select count(*)::int from public.profiles where id in (
+    '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')),
+  2, 'una persona autenticada ve los perfiles de otras personas');
 
 select lives_ok($$update public.profiles set bio = 'Hola', username = 'ana_cocina' where id = '11111111-1111-1111-1111-111111111111'$$,
   'puedo editar mi propio perfil');

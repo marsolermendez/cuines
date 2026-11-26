@@ -23,7 +23,53 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "profiles": {
+            "entries": {
+                  Row: {
+                    "author_id": string,"body": string,"cooked_on": string | null,"created_at": string,"id": string,"planned_for": string | null,"position": number | null,"published_at": string | null,"recipe_id": string,"status": string,"tags": (string)[],"title": string | null,"updated_at": string,"visibility": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_id": string,"body"?: string,"cooked_on"?: string | null,"created_at"?: string,"id"?: string,"planned_for"?: string | null,"position"?: number | null,"published_at"?: string | null,"recipe_id": string,"status": string,"tags"?: (string)[],"title"?: string | null,"updated_at"?: string,"visibility"?: string
+                  }
+                  Update: {
+                    "author_id"?: string,"body"?: string,"cooked_on"?: string | null,"created_at"?: string,"id"?: string,"planned_for"?: string | null,"position"?: number | null,"published_at"?: string | null,"recipe_id"?: string,"status"?: string,"tags"?: (string)[],"title"?: string | null,"updated_at"?: string,"visibility"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "entries_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "entries_recipe_id_fkey"
+      columns: ["recipe_id"]
+isOneToOne: false
+      referencedRelation: "recipes"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"entry_photos": {
+                  Row: {
+                    "entry_id": string,"height": number,"id": string,"path": string,"placeholder": string,"position": number,"thumb_path": string,"width": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "entry_id": string,"height": number,"id"?: string,"path": string,"placeholder": string,"position": number,"thumb_path": string,"width": number
+                  }
+                  Update: {
+                    "entry_id"?: string,"height"?: number,"id"?: string,"path"?: string,"placeholder"?: string,"position"?: number,"thumb_path"?: string,"width"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "entry_photos_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "entries"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
                   Row: {
                     "avatar_url": string | null,"bio": string,"created_at": string,"display_name": string,"id": string,"is_private": boolean,"username": string | null
                   }
@@ -37,13 +83,47 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"recipes": {
+                  Row: {
+                    "created_at": string,"id": string,"ingredients": (string)[],"owner_id": string,"source_url": string | null,"steps": (string)[],"title": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"ingredients"?: (string)[],"owner_id": string,"source_url"?: string | null,"steps"?: (string)[],"title": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"ingredients"?: (string)[],"owner_id"?: string,"source_url"?: string | null,"steps"?: (string)[],"title"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "recipes_owner_id_fkey"
+      columns: ["owner_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "can_read_entry":
+{ Args: { "eauthor": string,"eid": string,"estatus": string,"evisibility": string }; Returns: boolean
+                           },
+"is_follower":
+{ Args: { "uid": string }; Returns: boolean
+                           },
+"is_participant":
+{ Args: { "eid": string }; Returns: boolean
+                           },
+"is_private":
+{ Args: { "uid": string }; Returns: boolean
+                           },
+"recipe_has_readable_entry":
+{ Args: { "rid": string }; Returns: boolean
+                           }
           }
           Enums: {
             [_ in never]: never
