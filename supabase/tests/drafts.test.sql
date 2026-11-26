@@ -7,8 +7,8 @@ create extension if not exists pgtap with schema extensions;
 select plan(20);
 
 insert into auth.users (id, email) values
-  ('11111111-1111-1111-1111-111111111111', 'ana@test.local'),
-  ('22222222-2222-2222-2222-222222222222', 'bea@test.local');
+  ('11111111-1111-1111-1111-111111111111', 'ana@pgtap.test'),
+  ('22222222-2222-2222-2222-222222222222', 'bea@pgtap.test');
 
 insert into storage.objects (bucket_id, name) values
   ('photos', '11111111-1111-1111-1111-111111111111/dddddddd-0000-0000-0000-000000000001/a_full.jpg'),

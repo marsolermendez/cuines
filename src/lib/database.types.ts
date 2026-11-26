@@ -23,7 +23,33 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "entries": {
+            "comments": {
+                  Row: {
+                    "author_id": string,"body": string,"created_at": string,"entry_id": string,"id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_id": string,"body": string,"created_at"?: string,"entry_id": string,"id"?: string
+                  }
+                  Update: {
+                    "author_id"?: string,"body"?: string,"created_at"?: string,"entry_id"?: string,"id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "comments_author_id_fkey"
+      columns: ["author_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "comments_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "entries"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"entries": {
                   Row: {
                     "author_id": string,"body": string,"cooked_on": string | null,"created_at": string,"id": string,"planned_for": string | null,"position": number | null,"published_at": string | null,"recipe_id": string,"status": string,"tags": (string)[],"title": string | null,"updated_at": string,"visibility": string
                   }
@@ -69,6 +95,58 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"follows": {
+                  Row: {
+                    "created_at": string,"followee_id": string,"follower_id": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"followee_id": string,"follower_id": string,"status"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"followee_id"?: string,"follower_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "follows_followee_id_fkey"
+      columns: ["followee_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "follows_follower_id_fkey"
+      columns: ["follower_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"likes": {
+                  Row: {
+                    "created_at": string,"entry_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"entry_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"entry_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "likes_entry_id_fkey"
+      columns: ["entry_id"]
+isOneToOne: false
+      referencedRelation: "entries"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "likes_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "avatar_url": string | null,"bio": string,"created_at": string,"display_name": string,"id": string,"is_private": boolean,"username": string | null
@@ -103,6 +181,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"reports": {
+                  Row: {
+                    "comment_id": string,"created_at": string,"id": string,"reason": string,"reporter_id": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "comment_id": string,"created_at"?: string,"id"?: string,"reason": string,"reporter_id": string,"status"?: string
+                  }
+                  Update: {
+                    "comment_id"?: string,"created_at"?: string,"id"?: string,"reason"?: string,"reporter_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reports_comment_id_fkey"
+      columns: ["comment_id"]
+isOneToOne: false
+      referencedRelation: "comments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -112,6 +216,29 @@ isOneToOne: false
             "can_read_entry":
 { Args: { "eauthor": string,"eid": string,"estatus": string,"evisibility": string }; Returns: boolean
                            },
+"feed":
+{ Args: { "p_before"?: string,"p_limit"?: number }; Returns: {
+              "author_id": string,
+"body": string,
+"cooked_on": string | null,
+"created_at": string,
+"id": string,
+"planned_for": string | null,
+"position": number | null,
+"published_at": string | null,
+"recipe_id": string,
+"status": string,
+"tags": (string)[],
+"title": string | null,
+"updated_at": string,
+"visibility": string
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "entries"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "is_follower":
 { Args: { "uid": string }; Returns: boolean
                            },

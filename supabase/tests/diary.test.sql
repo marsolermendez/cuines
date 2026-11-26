@@ -1,6 +1,6 @@
 -- Privacidad del diario (Fase 2): entradas, borradores, recetas, fotos y Storage. Ejecutar: npm run db:test
 -- Actores: Ana (autora), Bea (otra persona sin relación), Cai (perfil privado) y anónimo.
--- Aún no hay seguidores (Fase 4): "solo seguidores" lo ve únicamente su autora. Esos tests se ampliarán entonces.
+-- Aquí nadie sigue a nadie: "solo seguidores" lo ve únicamente su autora. Con seguidores, ver social.test.sql.
 begin;
 
 create extension if not exists pgtap with schema extensions;
@@ -8,9 +8,9 @@ create extension if not exists pgtap with schema extensions;
 select plan(40);
 
 insert into auth.users (id, email) values
-  ('11111111-1111-1111-1111-111111111111', 'ana@test.local'),
-  ('22222222-2222-2222-2222-222222222222', 'bea@test.local'),
-  ('33333333-3333-3333-3333-333333333333', 'cai@test.local');
+  ('11111111-1111-1111-1111-111111111111', 'ana@pgtap.test'),
+  ('22222222-2222-2222-2222-222222222222', 'bea@pgtap.test'),
+  ('33333333-3333-3333-3333-333333333333', 'cai@pgtap.test');
 update public.profiles set is_private = true where id = '33333333-3333-3333-3333-333333333333';
 
 -- Archivos de Storage: los sube la API de Storage; aquí se insertan como superusuaria.

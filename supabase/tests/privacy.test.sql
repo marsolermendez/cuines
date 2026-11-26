@@ -7,9 +7,9 @@ select plan(13);
 
 -- Dos usuarios de prueba; el trigger crea sus perfiles.
 insert into auth.users (id, email, raw_user_meta_data) values
-  ('11111111-1111-1111-1111-111111111111', 'ana@test.local',
+  ('11111111-1111-1111-1111-111111111111', 'ana@pgtap.test',
    '{"full_name": "Ana", "picture": "https://example.com/ana.jpg"}'),
-  ('22222222-2222-2222-2222-222222222222', 'bea@test.local', '{}');
+  ('22222222-2222-2222-2222-222222222222', 'bea@pgtap.test', '{}');
 
 -- Trigger de alta
 select is((select display_name from public.profiles where id = '11111111-1111-1111-1111-111111111111'),
