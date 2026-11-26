@@ -2,15 +2,15 @@ import { btnPrimary, btnSecondary } from '../../components/ui'
 import type { Profile } from '../../lib/types'
 import { useFollowStatus, useToggleFollow } from './follows'
 
-export default function FollowButton({ profile }: { profile: Pick<Profile, 'id' | 'is_private' | 'display_name'> }) {
+export default function FollowButton({ profile }: { profile: Pick<Profile, 'id' | 'display_name'> }) {
   const { data: status, isPending } = useFollowStatus(profile.id)
   const toggle = useToggleFollow(profile.id)
   if (isPending) return null
 
-  const label = status === 'accepted' ? 'Siguiendo' : status === 'pending' ? 'Solicitud enviada' : profile.is_private ? 'Solicitar seguir' : 'Seguir'
+  const label = status === 'accepted' ? 'Siguiendo' : status === 'pending' ? 'Solicitud enviada' : 'Solicitar seguir'
 
   function click() {
-    if (status === 'accepted' && !window.confirm(`¿Dejar de seguir a ${profile.display_name}?${profile.is_private ? ' Para volver a verla tendrá que aceptarte otra vez.' : ''}`)) return
+    if (status === 'accepted' && !window.confirm(`¿Dejar de seguir a ${profile.display_name}? Para volver a seguirle tendrá que aceptarte otra vez.`)) return
     toggle.mutate(!!status)
   }
 

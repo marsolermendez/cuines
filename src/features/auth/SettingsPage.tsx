@@ -77,7 +77,7 @@ export default function SettingsPage() {
           <input type="checkbox" className="mt-1" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} />
           <span>
             Diario privado
-            <span className="block text-ink-soft">Quien quiera seguirte necesitará tu aprobación.</span>
+            <span className="block text-ink-soft">Solo quien te siga verá tus entradas, también las públicas. Seguirte siempre necesita tu aprobación.</span>
           </span>
         </label>
         <div className="flex items-center gap-3">

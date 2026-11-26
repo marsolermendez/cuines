@@ -4,7 +4,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(72);
+select plan(76);
 
 insert into auth.users (id, email) values
   ('11111111-1111-1111-1111-111111111111', 'ana@pgtap.test'),
@@ -58,8 +58,8 @@ select is((select count(*)::int from public.entries where id::text like 'eeeeeee
 
 select lives_ok($$insert into public.follows (follower_id, followee_id) values ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111')$$,
   'Bea sigue a Ana');
-select is((select status from public.follows where followee_id = '11111111-1111-1111-1111-111111111111'), 'accepted',
-  'seguir un diario público se acepta solo');
+select is((select status from public.follows where followee_id = '11111111-1111-1111-1111-111111111111'), 'pending',
+  'seguir un diario público también queda pendiente de aprobación');
 select lives_ok($$insert into public.follows (follower_id, followee_id) values ('22222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333')$$,
   'Bea solicita seguir a Cai');
 select is((select status from public.follows where followee_id = '33333333-3333-3333-3333-333333333333'), 'pending',
@@ -71,6 +71,22 @@ select throws_ok($$insert into public.follows (follower_id, followee_id) values 
   '23514', null, 'no puedo seguirme a mí misma');
 select throws_ok($$insert into public.follows (follower_id, followee_id) values ('22222222-2222-2222-2222-222222222222', '99999999-9999-9999-9999-999999999999')$$,
   '23503', null, 'no se puede seguir a alguien que no existe');
+
+select is((select count(*)::int from public.entries where id::text like 'eeeeeeee-4444%'), 1,
+  'con la solicitud pendiente, Bea sigue viendo solo la entrada pública de Ana');
+select is_empty($$select 1 from public.feed()$$, 'y su feed está vacío hasta que Ana acepte');
+
+-- ===================================================================== Ana acepta a Bea
+reset role;
+select set_config('request.jwt.claims', '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
+set local role authenticated;
+
+select lives_ok($$update public.follows set status = 'accepted' where follower_id = '22222222-2222-2222-2222-222222222222' and followee_id = '11111111-1111-1111-1111-111111111111'$$,
+  'Ana acepta la solicitud de Bea');
+
+reset role;
+select set_config('request.jwt.claims', '{"sub": "22222222-2222-2222-2222-222222222222", "role": "authenticated"}', true);
+set local role authenticated;
 
 select is((select count(*)::int from public.entries where id = 'eeeeeeee-4444-0000-0000-000000000005'), 0,
   'una solicitud pendiente no da acceso al diario privado');
@@ -253,9 +269,11 @@ reset role;
 select set_config('request.jwt.claims', '{"sub": "44444444-4444-4444-4444-444444444444", "role": "authenticated"}', true);
 set local role authenticated;
 
-select is((select status from public.follows where follower_id = '44444444-4444-4444-4444-444444444444'), 'accepted',
-  'al hacerse público, las solicitudes pendientes se aceptan');
-select is((select count(*)::int from public.entries where id = 'eeeeeeee-4444-0000-0000-000000000005'), 1, 'y Dan ya ve la entrada de Cai');
+select is((select status from public.follows where follower_id = '44444444-4444-4444-4444-444444444444'), 'pending',
+  'al hacerse público, las solicitudes pendientes siguen esperando a Cai');
+select is((select count(*)::int from public.entries where id = 'eeeeeeee-4444-0000-0000-000000000005'), 1,
+  'Dan ve la entrada pública de Cai porque su diario ya es público, no porque la solicitud se aceptara');
+select is_empty($$select 1 from public.feed()$$, 'pero no le llega a su feed hasta que Cai la acepte');
 
 -- ===================================================================== anónimo
 reset role;
