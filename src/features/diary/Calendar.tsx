@@ -88,7 +88,7 @@ export default function Calendar({ authorId }: { authorId: string }) {
           <ul className="mt-2 grid gap-2">
             {byDay.get(selected)?.map((e) => (
               <li key={e.id}>
-                <Link to={`/e/${e.id}`} className="block rounded-lg border border-line bg-paper px-4 py-3 font-serif text-lg hover:shadow-sm">
+                <Link to={`/e/${e.id}`} className="block rounded-lg border border-line bg-paper px-4 py-3 font-serif text-lg hover:border-field">
                   {e.title}
                   {e.shared && <span className="mt-0.5 block font-sans text-xs text-ink-soft">con {e.author_display_name}</span>}
                 </Link>

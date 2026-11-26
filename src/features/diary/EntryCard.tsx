@@ -36,7 +36,7 @@ export default function EntryCard({ entry, urls, showVisibility, sharedBy, autho
   const cover = entry.entry_photos[0]
   const vis = visibilityInfo(entry.visibility)
   return (
-    <article className="relative overflow-hidden rounded-xl border border-line bg-paper transition hover:shadow-sm">
+    <article className="relative overflow-hidden rounded-xl border border-line bg-paper transition hover:border-field">
       {author && (
         <Link to={`/u/${author.username}`} className="relative z-10 flex items-center gap-2 p-3 text-sm font-medium hover:underline">
           <Avatar profile={author} className="size-7" />

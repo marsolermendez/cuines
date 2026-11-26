@@ -57,7 +57,7 @@ export default function Recipebook({ ownerId }: { ownerId: string }) {
         <ul className="mt-4 grid gap-2">
           {list.map((g) => (
             <li key={g.id}>
-              <Link to={`/r/${g.id}`} className="flex items-baseline justify-between gap-3 rounded-xl border border-line bg-paper px-4 py-3 hover:shadow-sm">
+              <Link to={`/r/${g.id}`} className="flex items-baseline justify-between gap-3 rounded-xl border border-line bg-paper px-4 py-3 hover:border-field">
                 <span className="min-w-0 truncate font-serif text-lg font-medium">{g.title}</span>
                 <span className="shrink-0 text-sm text-ink-soft">
                   {g.times > 1 && <span className="mr-2 font-medium text-clay">×{g.times}</span>}
