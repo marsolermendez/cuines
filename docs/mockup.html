@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuines · maqueta</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--text-primary:#2b2420;--text-secondary:#6b5f57;--surface-2:#fff;--bg-neutral:#f1ebe3;--border:#e8dfd5;--border-strong:#cfc3b6;--border-stronger:#9b8f84;--bg-warning:#faeeda;--text-warning:#854f0b;--bg-success:#eaf3de;--text-success:#3b6d11;--bg-accent:#e6f1fb;--text-accent:#185fa5;--font-voice:'Fraunces',Georgia,serif}
+@media (prefers-color-scheme:dark){:root{--text-primary:#f3ece4;--text-secondary:#b9aca1;--surface-2:#2a231f;--bg-neutral:#1d1815;--border:#3c332d;--border-strong:#56493f;--border-stronger:#8a7b6e;--bg-warning:#412402;--text-warning:#faeeda;--bg-success:#173404;--text-success:#eaf3de;--bg-accent:#042c53;--text-accent:#b5d4f4}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 12px;background:var(--bg-neutral);color:var(--text-primary);font-family:'Inter',system-ui,sans-serif;font-size:14px;display:flex;justify-content:center}
+input,select,textarea,button{font:inherit;color:var(--text-primary)}
+input,select,textarea{background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:8px;padding:0 10px}
+input,select{height:36px}
+textarea{padding:8px 10px;resize:vertical}
+button{background:transparent;border:0.5px solid var(--border-strong);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
+.ph{border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;gap:6px}
+.pill{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--bg-neutral);color:var(--text-secondary);display:inline-block}
+.cta{background:#993C1D;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
+.cta:hover{background:#712B13}
+.card{border:0.5px solid var(--border);border-radius:12px;background:var(--surface-2);padding:10px;margin-bottom:12px}
+.tab{flex:1;text-align:center;font-size:11px;line-height:1.15;padding:8px 2px 6px;cursor:pointer;color:var(--text-secondary);border:none;background:none;border-radius:0}
+.tab i{display:block;font-size:20px;margin-bottom:2px}
+.tab.on{color:#D85A30}
+.row{display:flex;align-items:center;gap:8px}
+.h{font-family:var(--font-voice);font-size:18px;font-weight:500;margin:0 0 4px}
+.sm{font-size:12px;color:var(--text-secondary)}
+.body{font-size:13px;line-height:1.6;color:var(--text-secondary);margin:0}
+.ac{color:#D85A30}
+.sub{border:none;background:none;padding:6px 10px;font-size:13px;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;border-radius:0}
+.sub.on{color:var(--text-primary);border-bottom-color:#D85A30}
+.stat{flex:1;background:var(--bg-neutral);border-radius:8px;padding:8px 10px}
+.stat b{display:block;font-size:20px;font-weight:500}
+.lk{cursor:pointer}
+.dy{border:none;background:none;aspect-ratio:1;border-radius:50%;font-size:13px;cursor:pointer;position:relative;padding:0;color:var(--text-primary);height:auto}
+.dy.has{background:#993C1D;color:#fff;font-weight:500}
+.dy.td{outline:1.5px solid var(--border-stronger);outline-offset:-1.5px}
+.dy.sel{outline:2px solid #D85A30;outline-offset:2px}
+.n{position:absolute;top:-4px;right:-4px;font-size:11px;font-style:normal;font-weight:500;min-width:16px;height:16px;line-height:15px;border-radius:8px;background:var(--surface-2);color:#993C1D;border:0.5px solid #993C1D}
+</style>
+</head>
+<body>
+<div style="width:340px;background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:28px;overflow:hidden;align-self:flex-start">
+  <div class="row" style="padding:14px 16px 4px"><span class="h" style="margin:0;flex:1;font-size:22px">Cuines</span><i class="ti ti-search" aria-hidden="true"></i></div>
+
+  <div style="padding:8px 14px 14px;min-height:640px">
+
+  <div id="s-feed">
+    <div class="card lk" onclick="go('entry')">
+      <div class="row" style="margin-bottom:8px"><div class="ph" style="width:28px;height:28px;border-radius:50%;background:#F5C4B3;color:#4A1B0C;font-weight:500">LP</div><div><div style="font-size:13px;font-weight:500">Laia P.</div><div class="sm">hace 4 días · cocinó con @marc</div></div></div>
+      <div class="ph" style="height:170px;background:#F0997B;color:#4A1B0C"><i class="ti ti-photo" style="font-size:26px" aria-hidden="true"></i>foto principal</div>
+      <div class="h" style="margin-top:10px">Domingo de cocido con la abuela</div>
+      <div class="sm ac" style="margin-bottom:4px" onclick="event.stopPropagation();go('recipe')"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> Cocido de la abuela</div>
+      <p class="body">Empezó fatal: se me olvidó poner los garbanzos en remojo y tuvimos que improvisar con los de bote. Pero la abuela dijo que lo importante es el caldo, y tenía razón. Al final comimos seis y repetimos todos… <span class="ac">Leer más</span></p>
+      <div class="row sm" style="margin-top:8px"><i class="ti ti-heart" aria-hidden="true"></i>12<i class="ti ti-message" aria-hidden="true"></i>3<span style="flex:1"></span><i class="ti ti-bookmark" aria-hidden="true"></i>Guardar</div>
+    </div>
+    <div class="card lk" onclick="go('entry')">
+      <div class="row" style="margin-bottom:8px"><div class="ph" style="width:28px;height:28px;border-radius:50%;background:#9FE1CB;color:#04342C;font-weight:500">JR</div><div><div style="font-size:13px;font-weight:500">Jordi R.</div><div class="sm">ayer</div></div></div>
+      <div class="ph" style="height:120px;background:#FAC775;color:#412402"><i class="ti ti-photo" style="font-size:26px" aria-hidden="true"></i>foto principal</div>
+      <div class="h" style="margin-top:10px">Coca de recapte, intento 3</div>
+      <div class="sm ac" style="margin-bottom:4px"><i class="ti ti-tools-kitchen-2" aria-hidden="true"></i> Coca de recapte</div>
+      <p class="body">Por fin la masa quedó fina. El truco fue dejarla reposar toda la noche… <span class="ac">Leer más</span></p>
+    </div>
+  </div>
+
+  <div id="s-drafts" style="display:none">
+    <div class="row" style="margin-bottom:8px"><span class="h" style="margin:0;flex:1">Quiero cocinar</span><button class="cta" onclick="go('new')"><i class="ti ti-plus" aria-hidden="true"></i> Receta</button></div>
+    <input placeholder="Buscar receta o ingrediente" style="width:100%">
+    <div class="row" style="margin:8px 0;flex-wrap:wrap"><span class="pill">cena rápida</span><span class="pill">para invitados</span><span class="pill">dulce</span></div>
+    <div class="row sm" style="margin-bottom:10px">Orden <select><option>Fecha prevista</option><option>Recientes</option><option>A–Z</option><option>Manual</option></select></div>
+    <div class="card">
+      <div class="row" style="align-items:flex-start">
+        <div class="ph" style="width:52px;height:52px;background:#F5C4B3;color:#4A1B0C"><i class="ti ti-photo" aria-hidden="true"></i></div>
+        <div style="flex:1"><div class="lk" style="font-size:14px;font-weight:500" onclick="go('recipe')">Dal de lentejas rojas</div><div class="sm">Nota: probar con menos sal</div><div style="margin-top:4px"><span class="pill">cena rápida</span> <span class="pill" style="background:var(--bg-warning);color:var(--text-warning)">Para el dom 29</span></div></div>
+        <div class="sm" style="display:flex;flex-direction:column"><i class="ti ti-chevron-up" aria-hidden="true"></i><i class="ti ti-chevron-down" aria-hidden="true"></i></div>
+      </div>
+      <div style="margin-top:8px"><button class="cta" onclick="go('new','draft')">Cocinar ahora</button></div>
+    </div>
+    <div class="card">
+      <div class="row" style="align-items:flex-start">
+        <div class="ph" style="width:52px;height:52px;background:#B5D4F4;color:#042C53"><i class="ti ti-link" aria-hidden="true"></i></div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:500">Tarta de queso al horno</div><div class="sm">Enlace a la receta original · guardada de @jordi</div><div style="margin-top:4px"><span class="pill">para invitados</span> <span class="pill">dulce</span></div></div>
+        <div class="sm" style="display:flex;flex-direction:column"><i class="ti ti-chevron-up" aria-hidden="true"></i><i class="ti ti-chevron-down" aria-hidden="true"></i></div>
+      </div>
+      <div style="margin-top:8px"><button class="cta" onclick="go('new','draft')">Cocinar ahora</button></div>
+    </div>
+    <div class="sm" style="text-align:center"><i class="ti ti-lock" aria-hidden="true"></i> Solo tú ves esta lista</div>
+  </div>
+
+  <div id="s-new" style="display:none">
+    <div class="h">Nueva entrada</div>
+    <div id="from" class="sm" style="display:none;margin-bottom:8px;padding:6px 10px;border-radius:8px;background:var(--bg-accent);color:var(--text-accent)"></div>
+    <div class="row" style="margin-bottom:8px">
+      <div class="ph" style="width:72px;height:72px;background:#F0997B;color:#4A1B0C"><i class="ti ti-photo" aria-hidden="true"></i></div>
+      <div class="ph" style="width:72px;height:72px;background:#FAC775;color:#412402"><i class="ti ti-photo" aria-hidden="true"></i></div>
+      <div class="ph" style="width:72px;height:72px;border:0.5px dashed var(--border-strong);color:var(--text-secondary)"><i class="ti ti-plus" aria-hidden="true"></i>1–10</div>
+    </div>
+    <input placeholder="Título del día" style="width:100%;margin-bottom:6px">
+    <div class="row" style="margin-bottom:6px"><span class="sm">Cocinado el</span><input type="date" id="d"></div>
+    <textarea rows="6" placeholder="Cuenta qué pasó este día: qué salió bien, qué falló, con quién lo comiste…" style="width:100%;margin-bottom:8px"></textarea>
+    <div class="sm" style="margin-bottom:2px">Receta</div>
+    <div class="row" id="seg" style="margin-bottom:6px"><button class="sub on" id="g-new" onclick="recMode('new')">Receta nueva</button><button class="sub" id="g-pick" onclick="recMode('pick')">Una que ya tengo</button></div>
+    <div id="rec-new">
+      <input placeholder="Nombre de la receta" style="width:100%;margin-bottom:6px">
+      <textarea rows="3" placeholder="Ingredientes, uno por línea" style="width:100%;margin-bottom:6px"></textarea>
+      <textarea rows="3" placeholder="Pasos, uno por línea (o pega el enlace a la receta)" style="width:100%;margin-bottom:8px"></textarea>
+    </div>
+    <div id="rec-pick" style="display:none;margin-bottom:8px">
+      <select id="pk" style="width:100%"><option>Cocido de la abuela</option><option>Crema de calabaza sin crema</option><option>Paella de domingo</option><option>Dal de lentejas rojas</option></select>
+      <div class="sm" style="margin-top:4px">La receta se enlaza, no se copia: cuenta como otra vez. Tu relato es solo de este día.</div>
+    </div>
+    <div class="row" style="margin-bottom:8px"><span class="sm">Con</span><input placeholder="@usuario" style="flex:1"><span class="pill">@marc · pendiente</span></div>
+    <div class="row" style="margin-bottom:10px"><span class="sm">Visible para</span><select><option>Solo seguidores</option><option>Cualquiera</option><option>Solo yo</option></select></div>
+    <div class="row"><button class="cta" onclick="go('diary')">Publicar</button><button onclick="go('drafts')">Guardar en Quiero cocinar</button></div>
+  </div>
+
+  <div id="s-entry" style="display:none">
+    <div class="row sm lk" onclick="history2()"><i class="ti ti-arrow-left" aria-hidden="true"></i>Atrás</div>
+    <div class="h" style="font-size:21px;margin-top:6px">Domingo de cocido con la abuela</div>
+    <div class="sm" style="margin-bottom:8px">Laia P. · domingo 22 de noviembre · con <span class="ac">@marc</span> · Solo seguidores</div>
+    <div class="ph" style="height:150px;background:#F0997B;color:#4A1B0C;margin-bottom:4px"><i class="ti ti-photo" style="font-size:26px" aria-hidden="true"></i>foto principal</div>
+    <div class="row" style="margin-bottom:10px"><div class="ph" style="flex:1;height:70px;background:#FAC775;color:#412402"><i class="ti ti-photo" aria-hidden="true"></i></div><div class="ph" style="flex:1;height:70px;background:#97C459;color:#173404"><i class="ti ti-photo" aria-hidden="true"></i></div><div class="ph" style="flex:1;height:70px;background:#F4C0D1;color:#4B1528"><i class="ti ti-photo" aria-hidden="true"></i>+4</div></div>
+    <p class="body" style="margin-bottom:8px">Empezó fatal: se me olvidó poner los garbanzos en remojo y tuvimos que improvisar con los de bote. Marc llegó a las doce con la cara de quien sabe que algo huele raro.</p>
+    <p class="body" style="margin-bottom:8px">La abuela dijo que lo importante es el caldo, y tenía razón. Lo dejamos hervir tres horas mientras ella contaba la historia de cuando su madre lo hacía con la gallina del corral.</p>
+    <p class="body" style="margin-bottom:10px">Al final comimos seis y repetimos todos. La próxima vez: remojo la noche anterior y menos sal en la pelota.</p>
+    <div class="card lk" onclick="go('recipe')">
+      <div class="row"><div style="flex:1"><div class="sm">Receta</div><div style="font-size:14px;font-weight:500">Cocido de la abuela</div></div><i class="ti ti-chevron-right" aria-hidden="true"></i></div>
+      <div style="margin-top:6px"><span class="pill">hecha 7 veces</span> <span class="pill">4 personas</span> <span class="pill">3 veces por Laia</span></div>
+    </div>
+    <div class="row sm" style="margin-bottom:8px"><i class="ti ti-heart" aria-hidden="true"></i>12<i class="ti ti-message" aria-hidden="true"></i>3</div>
+    <div style="font-size:13px;margin-bottom:6px"><span style="font-weight:500">Jordi R.</span> <span class="body">Qué pinta, ese caldo.</span> <span class="sm"> · Reportar</span></div>
+    <div style="font-size:13px;margin-bottom:8px"><span style="font-weight:500">Marc</span> <span class="body">Yo traje el pan.</span> <span class="sm"> · Borrar</span></div>
+    <input placeholder="Escribe un comentario" style="width:100%">
+  </div>
+
+  <div id="s-recipe" style="display:none">
+    <div class="row sm lk" onclick="history2()"><i class="ti ti-arrow-left" aria-hidden="true"></i>Atrás</div>
+    <div class="h" style="font-size:21px;margin-top:6px">Cocido de la abuela</div>
+    <div class="sm" style="margin-bottom:8px">Receta de Laia P.</div>
+    <div class="row" style="margin-bottom:10px"><div class="stat"><span class="sm">Hecha</span><b>7 veces</b></div><div class="stat"><span class="sm">Por</span><b>4 personas</b></div></div>
+    <div class="row" style="margin-bottom:6px"><button class="cta" onclick="go('new','again')">Cocinar otra vez</button><button onclick="save()">Guardar para cocinar</button></div>
+    <span id="toast" class="pill" style="display:none;margin-bottom:8px;background:var(--bg-success);color:var(--text-success)">Guardada en Quiero cocinar</span>
+    <div class="card" style="margin-top:8px">
+      <div class="sm" style="margin-bottom:4px">Ingredientes</div><p class="body" style="margin-bottom:6px">400 g de garbanzos · 1 hueso de jamón · 2 zanahorias · col</p>
+      <div class="sm" style="margin-bottom:4px">Pasos</div><p class="body">1. Hervir los garbanzos con el hueso. 2. Añadir verduras a la hora y media.</p>
+    </div>
+    <div style="font-size:13px;font-weight:500;margin-bottom:6px">Tus veces · 3</div>
+    <div class="card lk" onclick="go('entry')"><div class="sm">22 nov</div><div style="font-size:13px;font-weight:500">Domingo de cocido con la abuela</div><p class="body" style="font-size:12px">Empezó fatal: se me olvidó poner los garbanzos en remojo…</p></div>
+    <div class="card lk" onclick="go('entry')"><div class="sm">3 oct</div><div style="font-size:13px;font-weight:500">Primer intento solo</div><p class="body" style="font-size:12px">Me salió soso y la casa olía a col durante dos días…</p></div>
+    <div class="card lk" onclick="go('entry')"><div class="sm">25 dic 2025</div><div style="font-size:13px;font-weight:500">Navidad: cocido sin gallina</div><p class="body" style="font-size:12px">Este año con la olla a presión y media hora menos. Se notó…</p></div>
+    <div style="font-size:13px;font-weight:500;margin-bottom:6px">Otras personas · 4</div>
+    <div class="card lk" onclick="go('entry')"><div class="row"><div class="ph" style="width:24px;height:24px;border-radius:50%;background:#9FE1CB;color:#04342C;font-size:11px">JR</div><span style="font-size:13px;font-weight:500">Jordi R.</span><span class="sm">20 nov</span></div><p class="body" style="font-size:12px;margin-top:4px">Lo hice con chorizo porque no tenía hueso. Otra cosa, pero buena…</p></div>
+    <div class="sm" style="text-align:center">Los contadores solo incluyen entradas que tú puedes ver.</div>
+  </div>
+
+  <div id="s-diary" style="display:none">
+    <div class="row" style="margin-bottom:8px"><div class="ph" style="width:52px;height:52px;border-radius:50%;background:#F5C4B3;color:#4A1B0C;font-weight:500">LP</div><div style="flex:1"><div style="font-size:15px;font-weight:500">Laia P. <span class="sm">@laia</span></div><div class="sm">Cocino los domingos y me equivoco mucho.</div></div></div>
+    <div class="row sm" style="margin-bottom:8px"><span><b style="font-weight:500">24</b> entradas</span><span><b style="font-weight:500">12</b> seguidores</span><span><b style="font-weight:500">8</b> siguiendo</span></div>
+    <div class="row" style="border-bottom:0.5px solid var(--border);margin-bottom:10px;gap:0"><button class="sub on" id="b-tl" onclick="sub('tl')">Línea temporal</button><button class="sub" id="b-cal" onclick="sub('cal')">Calendario</button><button class="sub" id="b-rc" onclick="sub('rc')">Recetario</button></div>
+
+    <div id="tl">
+      <div class="sm" style="margin-bottom:6px">Noviembre 2026</div>
+      <div style="border-left:2px solid var(--border-strong);margin-left:10px;padding-left:14px">
+        <div style="margin-bottom:12px"><div class="sm">Dom 22</div><div class="card lk" style="margin:2px 0 0" onclick="go('entry')"><div class="row" style="align-items:flex-start"><div class="ph" style="width:56px;height:56px;background:#F0997B;color:#4A1B0C"><i class="ti ti-photo" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">Domingo de cocido con la abuela</div><p class="body" style="font-size:12px">Empezó fatal: se me olvidó poner los garbanzos…</p><span class="pill">Cocido de la abuela · 3.ª vez</span></div></div></div></div>
+        <div style="margin-bottom:12px"><div class="sm">Dom 15</div><div class="card lk" style="margin:2px 0 0" onclick="go('entry')"><div class="row" style="align-items:flex-start"><div class="ph" style="width:56px;height:56px;background:#9FE1CB;color:#04342C"><i class="ti ti-photo" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">Crema de calabaza sin crema</div><p class="body" style="font-size:12px">Lo que parecía un desastre acabó siendo lo mejor…</p></div></div></div></div>
+      </div>
+    </div>
+
+    <div id="cal" style="display:none">
+      <div class="row" style="margin-bottom:8px"><button onclick="mv(-1)" aria-label="Mes anterior"><i class="ti ti-chevron-left" aria-hidden="true"></i></button><span id="cm" style="flex:1;text-align:center;font-size:14px;font-weight:500"></span><button onclick="mv(1)" aria-label="Mes siguiente"><i class="ti ti-chevron-right" aria-hidden="true"></i></button></div>
+      <div class="sm" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin-bottom:4px"><span>lun</span><span>mar</span><span>mié</span><span>jue</span><span>vie</span><span>sáb</span><span>dom</span></div>
+      <div id="cg" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px"></div>
+      <div class="row sm" style="margin:10px 0"><span style="width:10px;height:10px;border-radius:50%;background:#993C1D;display:inline-block"></span>Día con entradas<span style="flex:1"></span><span style="width:10px;height:10px;border-radius:50%;outline:1.5px solid var(--border-stronger);outline-offset:-1.5px;display:inline-block"></span>Hoy</div>
+      <div id="cl"></div>
+    </div>
+
+    <div id="rc" style="display:none">
+      <input placeholder="Buscar en el recetario" style="width:100%;margin-bottom:8px">
+      <div class="card lk" onclick="go('recipe')"><div class="row"><div style="flex:1"><div style="font-size:14px;font-weight:500">Cocido de la abuela</div><div class="sm">Última vez: 22 nov</div></div><span class="pill">×3</span></div></div>
+      <div class="card lk" onclick="go('recipe')"><div class="row"><div style="flex:1"><div style="font-size:14px;font-weight:500">Crema de calabaza sin crema</div><div class="sm">Última vez: 15 nov</div></div><span class="pill">×1</span></div></div>
+      <div class="card lk" onclick="go('recipe')"><div class="row"><div style="flex:1"><div style="font-size:14px;font-weight:500">Paella de domingo</div><div class="sm">8 nov · con @marc, solo lectura</div></div><span class="pill">×1</span></div></div>
+    </div>
+  </div>
+
+  <div id="s-settings" style="display:none">
+    <div class="h">Ajustes</div>
+    <div class="card"><div style="font-size:13px;font-weight:500;margin-bottom:6px">Perfil</div><input value="laia" style="width:100%;margin-bottom:6px"><textarea rows="2" style="width:100%">Cocino los domingos y me equivoco mucho.</textarea></div>
+    <div class="card"><label class="row" style="cursor:pointer"><input type="checkbox" checked><span style="font-size:13px">Diario privado</span></label><div class="sm" style="margin-top:4px">Quien quiera seguirte necesitará tu aprobación.</div></div>
+    <div class="card"><div style="font-size:13px;font-weight:500;margin-bottom:6px">Solicitudes de seguimiento · 2</div>
+      <div class="row" style="margin-bottom:6px"><span style="flex:1;font-size:13px">@nuria</span><button class="cta">Aceptar</button><button>Rechazar</button></div>
+      <div class="row"><span style="flex:1;font-size:13px">@pau</span><button class="cta">Aceptar</button><button>Rechazar</button></div></div>
+    <div class="card"><div style="font-size:13px;font-weight:500;margin-bottom:6px">Cocinar con otros · 1</div>
+      <div class="row"><span style="flex:1;font-size:13px">@marc te etiquetó en Paella de domingo</span><button class="cta">Aceptar</button></div></div>
+    <button>Cerrar sesión</button>
+  </div>
+
+  </div>
+
+  <div style="display:flex;border-top:0.5px solid var(--border);background:var(--surface-2)">
+    <button class="tab" data-t="feed" onclick="go('feed')"><i class="ti ti-home" aria-hidden="true"></i>Inicio</button>
+    <button class="tab" data-t="drafts" onclick="go('drafts')"><i class="ti ti-bookmark" aria-hidden="true"></i>Quiero cocinar</button>
+    <button class="tab" data-t="new" onclick="go('new')"><i class="ti ti-circle-plus" aria-hidden="true"></i>Nueva</button>
+    <button class="tab" data-t="diary" onclick="go('diary')"><i class="ti ti-book" aria-hidden="true"></i>Mi diario</button>
+    <button class="tab" data-t="settings" onclick="go('settings')"><i class="ti ti-settings" aria-hidden="true"></i>Ajustes</button>
+  </div>
+</div>
+
+<script>
+var S=['feed','drafts','new','entry','recipe','diary','settings'];
+var T={feed:'feed',drafts:'drafts',new:'new',diary:'diary',settings:'settings'};
+var cur='feed',prev='feed';
+var MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var E={
+'2026-11-01':[['Tortilla que no se dio la vuelta','Se rompió y la comimos igual, con cuchara.']],
+'2026-11-05':[['Sopa de miso exprés','Cuarenta minutos y a la cama.']],
+'2026-11-08':[['Paella de domingo','Con @marc: discutimos si lleva chorizo.'],['Brunch para seis','Tostadas, huevos y mucho café.']],
+'2026-11-12':[['Hummus casero, versión grumosa','Faltó tahini, sobró limón.']],
+'2026-11-15':[['Crema de calabaza sin crema','Lo que parecía un desastre acabó siendo lo mejor.']],
+'2026-11-21':[['Galletas para el cumple de Nuria','Dos bandejas quemadas, la tercera perfecta.']],
+'2026-11-22':[['Domingo de cocido con la abuela','Empezó fatal: se me olvidó poner los garbanzos…']],
+'2026-11-24':[['Arroz con lo que había','Nevera vacía y cena improvisada.']],
+'2026-10-03':[['Primer intento solo','Me salió soso y la casa olía a col dos días.']],
+'2026-10-11':[['Focaccia de romero','La masa creció el doble, aplausos.']],
+'2026-10-25':[['Castañada en casa','Castañas, boniatos y panellets de los de verdad.']]
+};
+var cm=new Date(2026,10,1);
+function pad(n){return (n<10?'0':'')+n}
+function go(n,x){
+  S.forEach(function(s){if(document.getElementById('s-'+s).style.display==='block')prev=s});
+  S.forEach(function(s){document.getElementById('s-'+s).style.display=s===n?'block':'none'});
+  if(T[n])cur=T[n];
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('on',b.dataset.t===cur)});
+  if(n==='new'){
+    var m=x||'scratch';
+    var b=document.getElementById('from');
+    b.style.display=m==='scratch'?'none':'block';
+    b.textContent=m==='draft'?'Desde tu borrador: Dal de lentejas rojas':'Cocinando otra vez: Cocido de la abuela';
+    document.getElementById('seg').style.display=m==='scratch'?'flex':'none';
+    recMode(m==='scratch'?'new':'pick');
+    document.getElementById('pk').value=m==='again'?'Cocido de la abuela':'Dal de lentejas rojas';
+  }
+  if(n==='diary')sub('tl');
+  document.getElementById('toast').style.display='none';
+}
+function history2(){go(prev==='entry'||prev==='recipe'?cur:prev)}
+function recMode(w){
+  document.getElementById('rec-new').style.display=w==='new'?'block':'none';
+  document.getElementById('rec-pick').style.display=w==='pick'?'block':'none';
+  document.getElementById('g-new').classList.toggle('on',w==='new');
+  document.getElementById('g-pick').classList.toggle('on',w==='pick');
+}
+function save(){
+  var t=document.getElementById('toast');
+  t.style.display='inline-block';
+  setTimeout(function(){t.style.display='none'},2500);
+}
+function sub(w){
+  ['tl','cal','rc'].forEach(function(v){
+    document.getElementById(v).style.display=v===w?'block':'none';
+    document.getElementById('b-'+v).classList.toggle('on',v===w);
+  });
+  if(w==='cal'){cm=new Date(2026,10,1);cal();pick('2026-11-22')}
+}
+function mv(d){cm=new Date(cm.getFullYear(),cm.getMonth()+d,1);cal();document.getElementById('cl').innerHTML='<div class="sm">Toca un día resaltado para ver sus entradas.</div>'}
+function cal(){
+  var y=cm.getFullYear(),m=cm.getMonth();
+  document.getElementById('cm').textContent=MN[m]+' '+y;
+  var off=(new Date(y,m,1).getDay()+6)%7;
+  var days=new Date(y,m+1,0).getDate();
+  var h='';
+  for(var i=0;i<off;i++)h+='<div></div>';
+  for(var d=1;d<=days;d++){
+    var k=y+'-'+pad(m+1)+'-'+pad(d),a=E[k];
+    h+='<button class="dy'+(a?' has':'')+(k==='2026-11-26'?' td':'')+'" data-k="'+k+'" onclick="pick(\''+k+'\')">'+d+(a&&a.length>1?'<i class="n">'+a.length+'</i>':'')+'</button>';
+  }
+  document.getElementById('cg').innerHTML=h;
+}
+function pick(k){
+  document.querySelectorAll('.dy').forEach(function(b){b.classList.toggle('sel',b.dataset.k===k)});
+  var p=k.split('-'),a=E[k];
+  var h='<div style="font-size:13px;font-weight:500;margin-bottom:6px">'+(+p[2])+' de '+MN[+p[1]-1].toLowerCase()+'</div>';
+  if(!a){h+='<div class="sm">Sin entradas este día.</div>'}
+  else a.forEach(function(e){
+    h+='<div class="card lk" onclick="go(\'entry\')"><div class="row" style="align-items:flex-start"><div class="ph" style="width:48px;height:48px;background:#F5C4B3;color:#4A1B0C"><i class="ti ti-photo" aria-hidden="true"></i></div><div><div style="font-size:14px;font-weight:500">'+e[0]+'</div><p class="body" style="font-size:12px">'+e[1]+'</p></div></div></div>';
+  });
+  document.getElementById('cl').innerHTML=h;
+}
+document.getElementById('d').valueAsDate=new Date();
+go('feed');
+</script>
+</body>
+</html>

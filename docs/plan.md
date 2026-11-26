@@ -1,0 +1,257 @@
+# Cuines — Plan del MVP (web responsive)
+
+## Contexto
+
+**Cuines** (antes "Bitácora de cocina"): diario social de cocina con la lógica de Polarsteps aplicada a recetas, como **web responsive** (no app nativa). El directorio `cuines/` está vacío: proyecto desde cero. Prioridades: privacidad garantizada en la base de datos (un borrador nunca visible para otros), **fotos protagonistas pero con mucho texto** (relatos largos, como los pasos de Polarsteps), hosting a coste cero y un backend que pueda reutilizar una futura app Expo.
+
+## Decisiones ya confirmadas
+
+| Tema | Decisión |
+|---|---|
+| Framework | Vite + React SPA (sin SSR) |
+| Seguir | Diario privado → solicitud que el dueño aprueba. Diario público → seguimiento inmediato |
+| Login | **Solo Google** (sin email/contraseña ni Apple) |
+| Diarios | Uno por usuario: perfil = diario |
+| Cocinar con alguien | Etiquetar participantes: autor único, el etiquetado acepta y puede salirse |
+| Nombre | **Cuines** |
+| Hosting | GitHub Pages en la cuenta **personal `marsolermendez`** (no la de Hike): gratis, URL fea (`marsolermendez.github.io/cuines`), sin dominio propio |
+| Tono visual | Fotos protagonistas **y mucho texto** (relatos largos, estilo Polarsteps) |
+| Recetas | **Con identidad:** una receta única que se cocina muchos días (cada uno con su relato) y por varias personas, con contadores de veces y personas |
+
+---
+
+## 1. Stack
+
+| Capa | Elección |
+|---|---|
+| Front | Vite + React 18 + TypeScript `strict`, React Router, TanStack Query, Tailwind CSS, zod |
+| Backend | Supabase: Postgres + RLS, Auth (solo Google, flujo PKCE), Storage |
+| Local | Supabase CLI (Docker), `supabase gen types typescript`, pgTAP (`supabase test db`) |
+| Hosting | **GitHub Pages** (estático, desplegado con GitHub Actions) + Supabase cloud (plan gratuito) |
+
+**Por qué Supabase y no Firebase:** "solo seguidores" exige que la regla de lectura consulte otra tabla (`follows`). En Postgres es una política RLS de una línea; en Firestore las reglas no hacen joins cómodos y habría que desnormalizar por seguidor. El feed, los contadores y el recetario son consultas relacionales. Además Postgres evita lock-in y la futura app Expo usa el mismo backend con las mismas reglas.
+
+**No incluido a propósito:** Redux/Zustand (TanStack Query basta), librería de componentes, librería de formularios, i18n (UI solo en español), e2e. Se añaden cuando duelan.
+
+**Coste de elegir SPA:** los enlaces compartidos no muestran foto/título (los crawlers no ejecutan JS). Aceptado para el MVP; después se resuelve con una función serverless que sirva etiquetas Open Graph (`/e/:id`).
+
+**Hosting gratis en GitHub Pages (URL fea, sin dominio propio):**
+- Se publica en `https://<usuario>.github.io/cuines/`. Vite con `base: '/cuines/'` y **`HashRouter`** (rutas tipo `/#/e/123`): Pages no sabe hacer fallback a `index.html`, y con hash las recargas no dan 404.
+- El login con Google usa **PKCE** (el código vuelve en `?code=`), que convive con `HashRouter`; el flujo por defecto (token en el hash) chocaría con él.
+- Despliegue: GitHub Actions (`npm ci && npm run build` → Pages) en cada push a `main`.
+- **El repo tiene que ser público** (Pages es gratis solo así en cuentas gratuitas). No es un problema de seguridad: en el cliente solo van la URL y la clave `anon` de Supabase, pensadas para ser públicas y protegidas por RLS. La `service_role` y el secreto de Google nunca entran en el repo.
+- Supabase gratuito pausa el proyecto tras ~1 semana sin actividad (se reactiva a mano desde el panel). Aceptable para un MVP.
+
+**Regla de arquitectura:** el cliente habla directo con Supabase y toda la lógica de negocio vive en SQL (RLS, constraints, triggers, 3 funciones RPC). Nada de API propia: así la app móvil futura no reimplementa nada.
+
+---
+
+## 2. Modelo de datos
+
+### Borrador vs entrada → **una sola tabla `entries` con `status`** (`draft` | `published`)
+
+- **"Cocinar ahora" es un `UPDATE`**, no una copia: conserva `id`, enlace a la receta y fotos sin duplicar filas ni mover archivos de Storage (la alternativa de dos tablas deja fotos huérfanas al convertir).
+- **Una única fuente de verdad para privacidad:** una política de lectura, heredada por fotos, comentarios y likes.
+- Timeline, recetario, borradores y feed son solo filtros sobre la misma tabla.
+- **Riesgo:** que una política olvide mirar `status` y filtre un borrador. Mitigación en tres capas: (1) lectura de no-autores exige `status = 'published'`; (2) `CHECK` que obliga a `draft ⇒ visibility = 'private'`; (3) suite pgTAP que falla si algún usuario distinto del autor lee un borrador.
+
+### Receta con identidad → **tabla `recipes` separada de `entries`**
+
+- Una receta es **una fila**; cada vez que se cocina es **una entrada nueva** que apunta a ella (`entries.recipe_id`): mismo texto de receta, relato distinto cada día. El recetario y la página de receta salen de agrupar por `recipe_id`.
+- **Entre personas:** "Guardar para cocinar" y "Cocinar otra vez" **enlazan la misma receta, no la copian**. Por eso se puede contar cuántas veces y cuántas personas la han cocinado (`recipe_stats`).
+- **Contadores = lo que *tú* puedes ver.** `recipe_stats` es `SECURITY INVOKER`: pasa por la RLS de `entries`, así que no cuenta borradores, ni entradas privadas, ni de seguidos que no sigues. Nadie puede deducir que alguien cocinó algo en privado.
+- **Edición:** solo edita la receta quien la creó; los demás la ven. Cambiar el texto se refleja en todas sus entradas (techo: no hay versiones). La variante personal va en el relato; "hacer mi versión" (copia con `forked_from`) queda fuera del MVP.
+- **Borrado:** FK `ON DELETE RESTRICT`: no se borra una receta que tenga entradas o borradores (de quien sea).
+- **Sin deduplicación:** si dos personas escriben "tortilla de patatas" por su cuenta, son dos recetas distintas.
+- **Coste:** una tabla más y dos inserts al crear una entrada desde cero (receta, luego entrada; si falla la segunda se borra la primera; una receta huérfana solo la ve quien la creó).
+
+### Tablas (Postgres)
+
+**`profiles`** — `id` (= `auth.users.id`), `username` (único, minúsculas, `^[a-z0-9_]{3,20}$`, null hasta el onboarding), `display_name`, `bio`, `avatar_url` (la foto de Google por defecto, o la que subas), `is_private bool default false`, `created_at`. Trigger en `auth.users` que crea la fila y precarga nombre y foto desde los datos de Google.
+
+**`recipes`** — `id`, `owner_id → profiles` (quien la creó; única persona que la edita), `title`, `source_url`, `ingredients text[]`, `steps text[]`, `created_at`, `updated_at`. Que tenga ingredientes y pasos, o `source_url`, se valida con zod en el cliente.
+
+**`entries`** — `id`, `author_id → profiles`, **`recipe_id → recipes NOT NULL ON DELETE RESTRICT`**, `status`, `visibility` (`public|followers|private`), `title`, `body` (relato largo, hasta ~20 000 caracteres), `cooked_on date`, `planned_for date` (recordatorio), `published_at`, `tags text[]` (GIN; etiquetas **personales**, no de la receta), `position float8` (orden manual de borradores), `created_at`, `updated_at`. En un borrador, `body` es la nota (p. ej. "probar con menos sal").
+- `CHECK`: `(status='draft' AND cooked_on IS NULL AND visibility='private') OR (status='published' AND cooked_on IS NOT NULL AND title IS NOT NULL AND planned_for IS NULL)`.
+- Un solo borrador por receta y persona: `UNIQUE (author_id, recipe_id) WHERE status = 'draft'` (guardar dos veces es idempotente). Cocinar la misma receta otro día = una entrada publicada nueva.
+- Índices parciales: `(author_id, published_at desc) WHERE status='published'` y `(author_id, position) WHERE status='draft'`.
+
+**`entry_photos`** — `id`, `entry_id → entries on delete cascade`, `position smallint CHECK (0..9)`, `UNIQUE(entry_id, position)` (= máximo 10 en la BD), `path`, `thumb_path`, `width`, `height`, `placeholder` (miniatura 16 px en base64, ~300 B).
+
+**`entry_participants`** — PK `(entry_id, user_id)`, `status` (`pending|accepted`). Solo sobre entradas `published`. El autor invita y puede quitar; el invitado acepta o se borra a sí mismo.
+
+**`follows`** — PK `(follower_id, followee_id)`, `status` (`pending|accepted`), `CHECK follower <> followee`. Un trigger `BEFORE INSERT` fija `status` según `followee.is_private` (el cliente no puede autoaceptarse); solo el seguido puede actualizar `status` (`GRANT UPDATE (status)`). Al pasar un perfil a público se aceptan las pendientes.
+
+**`likes`** — PK `(entry_id, user_id)`. **`comments`** — `id`, `entry_id`, `author_id`, `body` (1–1000), `created_at`.
+
+**`reports`** — `id`, `reporter_id`, `comment_id`, `reason`, `status` (`open|resolved`), `UNIQUE(reporter_id, comment_id)`.
+
+**Vista `diary_items`** (`security_invoker = true`) — entradas donde soy autor **o** participante aceptado. Alimenta el timeline; el recetario es esa misma lista agrupada por `recipe_id` en el cliente (veces y última vez).
+
+**RPC (3), todas `SECURITY INVOKER` (la RLS aplica al que llama):**
+- `save_as_draft(recipe_id)` — inserta un borrador privado que **enlaza** esa receta (`ON CONFLICT DO NOTHING`); la RLS impide guardar una receta que no ves.
+- `recipe_stats(recipe_id)` → `times`, `people`: entradas `published` visibles para ti y autores distintos (los etiquetados no cuentan como personas).
+- `feed(before, limit)` — entradas de seguidos aceptados, orden `published_at desc`.
+
+### Reglas de privacidad (RLS en todas las tablas)
+
+Lectura de `entries`:
+```sql
+author_id = auth.uid()
+OR is_participant(id)                       -- autor te etiquetó (pending o accepted)
+OR (status = 'published' AND (
+     (visibility = 'public'    AND (NOT is_private(author_id) OR is_follower(author_id)))
+  OR (visibility = 'followers' AND is_follower(author_id))))
+```
+- `is_follower`, `is_private`, `is_participant` son funciones `SECURITY DEFINER` con `search_path = ''` (evitan recursión entre políticas).
+- Perfil privado: una entrada `public` se comporta como `followers`.
+- Escritura: solo `author_id = auth.uid()`; `author_id` inmutable.
+- `entry_photos`, `likes`, `comments`: lectura/alta solo si `EXISTS (SELECT 1 FROM entries WHERE id = entry_id)`, que ya pasa por la RLS de `entries`. No se duplica la lógica.
+- `comments`: borra el autor del comentario **o** el autor de la entrada. `reports`: cada usuario solo ve los suyos.
+- Los borradores no admiten participantes, comentarios ni likes (no son legibles por nadie más).
+- `recipes` **lectura:** `owner_id = auth.uid()` o `EXISTS (SELECT 1 FROM entries WHERE recipe_id = recipes.id)` (otra vez decide la RLS de `entries`). Una receta solo existe para los demás si una entrada que ellos pueden ver la usa. **Escritura y borrado:** solo quien la creó.
+- `entries` insert/update con `WITH CHECK`: la receta enlazada tiene que ser visible para ti (no se enlaza una receta ajena que no ves).
+
+### Storage
+- Bucket `photos` **privado**; ruta `{author_id}/{entry_id}/{photo_id}_{full|thumb}.jpg`. Lectura permitida solo si existe un `entry_photos` visible (RLS) con ese `path`. Escritura solo en tu carpeta. Límite 2 MB, solo `image/jpeg`.
+- Se sirve con **signed URLs** en lote (1 h), cacheadas en TanStack Query. Un bucket público con rutas "inadivinables" filtraría fotos de borradores y entradas privadas a quien tenga la URL, lo que incumple el requisito.
+- Bucket `avatars` público.
+
+---
+
+## 3. Pantallas y navegación
+
+Móvil: barra inferior con 5 pestañas. Escritorio: misma navegación en barra lateral; contenido centrado (~680 px): ancho cómodo para leer relatos largos y fotos grandes. Las URLs llevan `#/` (ver Hosting).
+
+**Inicio · Quiero cocinar · ＋ Nueva · Mi diario · Ajustes**
+
+| Ruta | Pantalla |
+|---|---|
+| `/login`, `/onboarding` | Botón "Entrar con Google"; elegir `username` (nombre y foto vienen de Google, editables) y bio |
+| `/` | **Inicio**: feed de seguidos (scroll infinito, tarjetas con foto grande, ♥ y comentarios) |
+| `/draft` | **Quiero cocinar**: lista privada con buscador, filtro por etiquetas, orden (manual ↑↓, fecha prevista, recientes, A–Z), insignia "Para el sáb 29" |
+| `/draft/new`, `/draft/:id` | Crear/editar borrador (receta por escrito o enlace; foto y notas opcionales) |
+| `/new`, `/new?from=:draftId`, `/new?recipe=:id` | **Crear entrada**: fotos → título y fecha → relato → receta (nueva o una que ya tengo) → "¿con quién?" → visibilidad → publicar |
+| `/e/:id`, `/e/:id/edit` | Entrada: fotos, relato, tarjeta de receta (enlaza a `/r/:id` con "hecha 7 veces · 4 personas"), comentarios, ♥, reportar |
+| `/r/:id` | **Receta**: ingredientes y pasos, contadores "hecha N veces · M personas", **tus veces** (cada una con su relato), **otras personas** (solo lo que puedes ver), botones **Cocinar otra vez** y **Guardar para cocinar** |
+| `/u/:username` | **Diario**, vista **línea temporal**: vertical por días y meses (propias + las que cocinó con otros) |
+| `/u/:username/calendario` | **Diario**, vista **calendario mensual** (`?m=2026-11`): cuadrícula lun–dom, flechas de mes, **días con entradas resaltados** (varias el mismo día = contador); tocar un día lista sus entradas debajo; "hoy" con aro |
+| `/u/:username/recetario` | Recetas del diario sin repetir, con "×3" y última vez; búsqueda |
+| `/settings` | Perfil, privacidad del diario, solicitudes de seguimiento, invitaciones a "cocinar con" |
+
+**De borrador a entrada:** en `/draft/:id`, botón **Cocinar ahora** → `/new?from=:id` con el formulario precargado (receta enlazada, fecha = hoy editable, fotos de referencia quitables). Nada cambia en la BD hasta pulsar **Publicar**, que hace el `UPDATE` (`status='published'`, `cooked_on`, `title`, `visibility`, `published_at`). Si cancelas, sigue siendo borrador.
+
+**Crear entrada desde cero:** mismo formulario (`EntryForm`) con dos salidas: **Publicar** o **Guardar en Quiero cocinar** (crea borrador solo con la receta). Un único componente para crear, editar, convertir y guardar borrador. La receta se elige con un selector: **Receta nueva** (se crea al guardar) o **Una que ya tengo** (se enlaza y cuenta como otra vez).
+
+**Cocinar otra vez:** en `/r/:id` → `/new?recipe=:id` con la receta ya elegida; crea una entrada publicada nueva con su propio relato.
+
+**Guardar de otros:** botón en `/r/:id` (y en la tarjeta de receta de cada entrada) → RPC `save_as_draft(recipe_id)` → aviso "Guardada en Quiero cocinar" (con deshacer). El borrador **enlaza** la misma receta (no se copia nada) y, cuando la cocines, cuenta en sus contadores. No viajan fotos ni relato.
+
+**Cocinar con alguien:** campo "¿Con quién?" en el formulario (busca `username`). El invitado ve la solicitud en `/settings`; al aceptar, la entrada aparece en su diario y recetario como solo lectura con "con @autor". No aparece en el feed de sus seguidores (el feed solo trae entradas por autor).
+
+**Estética y tono "Polarsteps": foto + relato.** Fondo crema `#FBF7F2`, acento terracota, texto marrón oscuro, titulares serif (p. ej. Fraunces) y texto sans con buena medida de lectura (~65 caracteres, interlineado amplio). Tokens de color en variables CSS del tema de Tailwind.
+- **Entrada = una historia:** título y fecha, mosaico de fotos a sangre y debajo el relato completo en párrafos, seguido de una tarjeta de receta (enlazada, con sus contadores) y comentarios. Editor de texto que crece solo; el relato es tan importante como la foto.
+- **Tarjeta del feed:** foto grande + título + primeras líneas del relato con "Leer más" (no solo foto).
+- **Diario con tres vistas (pestañas): Línea temporal · Calendario · Recetario.** Es la misma lista de entradas vista de tres formas.
+- **Calendario:** una consulta por mes (`cooked_on` entre el día 1 y el último, sobre `diary_items`), agrupada por día en el cliente con la cadena `YYYY-MM-DD` (nada de `new Date(string)`: `cooked_on` es una fecha sin zona horaria y así se evitan desfases). Sin librería: rejilla CSS de 7 columnas. En el diario de otra persona solo se resaltan los días con entradas **que tú puedes ver** (lo decide la RLS, no el cliente).
+- **Timeline del diario:** línea vertical; cada día muestra miniatura, título, extracto del relato y, si repites receta, "3.ª vez".
+- **Sin editor de texto enriquecido:** texto plano con párrafos. Techo: no hay fotos intercaladas dentro del relato ni negritas; se añade más adelante si se echa en falta.
+
+---
+
+## 4. Imágenes (sin dependencias, en el navegador)
+
+1. Al elegir archivos (máx. 10): `createImageBitmap(file, { imageOrientation: 'from-image' })`.
+2. Canvas → **full** 1600 px (lado largo, JPEG q≈0.82, ~300 KB) + **thumb** 480 px (~30 KB) + **placeholder** 16 px en base64.
+3. Subida con concurrencia 3 y barra de progreso; inserta `entry_photos` con `width/height`.
+4. Feed: placeholder desenfocado → thumb → full en el detalle. `loading="lazy"`, `decoding="async"` y `aspect-ratio` desde `width/height` (sin saltos de layout).
+
+**Se usa JPEG, no WebP:** Safari no codifica WebP desde canvas (devolvería PNG). Techo conocido: HEIC en Chrome de escritorio no se decodifica (se avisa "conviértela a JPG"); Safari/iOS sí. Si más adelante pesa, se pasa a Image Transformations de Supabase (plan de pago).
+
+Borrado: el cliente elimina los archivos de Storage y luego la fila. Si falla a medias quedan huérfanos; limpieza periódica pospuesta.
+
+---
+
+## 5. Moderación básica
+
+- Reportar un comentario (motivo) → fila en `reports`.
+- Borrar: tu comentario, o cualquier comentario en tu entrada.
+- Revisión de `reports` desde el panel de Supabase (sin pantalla de admin en el MVP).
+- Sin bloqueo de usuarios ni edición de comentarios (pospuesto).
+
+---
+
+## 6. Estructura del repo
+
+```
+cuines/
+  README.md              # ejecución en local, variables, despliegue
+  .env.example           # VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY (solo clave anon)
+  package.json  vite.config.ts  tsconfig.json   # base: '/cuines/', HashRouter
+  .github/workflows/deploy.yml   # build + despliegue a GitHub Pages
+  docs/mockup.html       # maqueta clicable de las pantallas (Fase 0)
+  supabase/
+    config.jsonc         # Google OAuth lee GOOGLE_CLIENT_ID/SECRET de supabase/.env (en .gitignore)
+    migrations/          # 0001 schema · 0002 rls · 0003 storage · 0004 funciones
+    seed.sql             # usuarios y entradas de prueba
+    tests/privacy.test.sql   # pgTAP
+  src/
+    main.tsx  App.tsx    # router + layout con navegación
+    lib/                 # supabase.ts, database.types.ts (generado), images.ts, schemas.ts (zod)
+    components/          # EntryCard, ProgressiveImage, PhotoPicker, TabBar...
+    features/            # auth · diary · drafts · recipes · feed · social · moderation
+```
+Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el código (todo por `.env`).
+
+---
+
+## 7. Fases (cada una termina en algo probable)
+
+| # | Entrega | Cómo se prueba |
+|---|---|---|
+| **0** | Esqueleto: Vite + TS + Tailwind + HashRouter, Supabase local, tipos generados, README; maqueta aprobada guardada en `docs/mockup.html`; workflow de GitHub Pages | `supabase start` + `npm run dev` abre la app; `npm run typecheck` en verde; un push a `main` publica en `github.io/cuines` |
+| **1** | Login solo con Google, onboarding, perfil, avatar, `is_private`; RLS de `profiles` | Entrar con Google (credenciales OAuth propias en `supabase/.env`), elegir username, cambiar avatar; un 2.º usuario no puede editar mi perfil |
+| **2** | **Diario**: crear/editar/borrar entradas publicadas con fotos (pipeline completo), **receta nueva** (tabla `recipes` desde el día uno) y visibilidad; timeline por días **y vista calendario mensual**; RLS de `recipes`, `entries`, `entry_photos`, Storage; **suite pgTAP v1** | Publicar entrada con 3 fotos y verla en la línea temporal y como día resaltado en el calendario (tocarlo la lista; dos entradas el mismo día muestran contador; en el diario de otra cuenta no se resalta un día que solo tiene entradas privadas); pesos de red ≤ ~300 KB/foto; otro usuario no accede a una foto privada (ni por URL firmada de otro) |
+| **3** | **Borradores**: Quiero cocinar (etiquetas, búsqueda, orden, fecha prevista), **Cocinar ahora**, guardar para después | Un borrador no sale en `/u/:username` ni en consultas de otro usuario (SQL y navegador); la conversión conserva receta y fotos |
+| **4** | **Social**: seguir (con aprobación en privados), feed, perfiles públicos, likes, comentarios, reportar y borrar; pgTAP ampliada | Dos navegadores con dos cuentas: solicitud pendiente → aceptada → aparece en el feed; comentario reportado crea fila en `reports` |
+| **5** | **Recetas con identidad**: página `/r/:id`, **Cocinar otra vez**, selector "una que ya tengo", contadores (`recipe_stats`), **recetario** agrupado, **guardar de otros como borrador**; y **cocinar con alguien** | Cocino la misma receta 3 días con relatos distintos y sale una sola vez en el recetario con "×3"; B guarda mi receta y la cocina: la receta marca "2 personas"; C no cuenta entradas privadas ni puede guardar una receta que no ve; A etiqueta a B, B acepta y la ve en su diario (solo lectura) y se puede salir |
+| **6** | Pulido y despliegue: skeletons, estados vacíos, errores, revisión a 375/768/1280 px, accesibilidad básica (alt, foco), Supabase cloud + Google OAuth en producción, deploy a GitHub Pages | URL `github.io` pública; recorrido completo en móvil y escritorio |
+
+---
+
+## 8. Verificación
+
+- **Privacidad (lo crítico):** `supabase test db` ejecuta `privacy.test.sql`. Matriz de actores: autor, seguidor aceptado, seguidor pendiente, no seguidor, participante pending/accepted, `anon`. Casos: borrador invisible para todos salvo el autor; `published` × {public, followers, private}; perfil privado + entrada `public`; fotos/comentarios/likes heredan; no puedo autoaceptar un follow; no puedo comentar lo que no veo; `draft` con visibilidad ≠ `private` rechazado por el `CHECK`; `reports` ajenos ilegibles. Recetas: invisibles para otros mientras solo las usen borradores o entradas privadas; `recipe_stats` ignora borradores y entradas que no veo; solo quien la creó edita una receta; no se puede enlazar una receta que no veo; no se borra una receta con entradas.
+- Cada fase: `npm run typecheck` + `supabase test db` + recorrido manual descrito en la tabla.
+- Responsive: revisión manual a 375 / 768 / 1280 px en el navegador.
+
+---
+
+## 9. Supuestos a confirmar (se pueden cambiar sin rehacer el plan)
+
+1. **"Público" = cualquier usuario registrado.** No hay acceso anónimo en el MVP (se abre luego con una política para `anon`).
+2. **Orden de borradores:** selector + botones subir/bajar, no arrastrar y soltar (la columna `position` ya permite añadirlo).
+3. **Búsqueda, filtro por etiquetas y orden de borradores/recetario se hacen en el cliente** (cientos de filas por usuario; sin `tsvector`). Techo: miles de borradores.
+4. **Fotos:** 1–10 en entradas publicadas (el mínimo de 1 se valida en la interfaz; el máximo, en la BD). Borradores: 0–10.
+5. **Recordatorio de fecha prevista** = insignia visible y orden, sin notificaciones (push queda fuera).
+6. **Participantes** ven la entrada aunque sea privada (la has compartido tú con ellos expresamente).
+7. Interfaz solo en español (¿catalán más adelante?); sin modo oscuro.
+8. **Solo Google:** todos los usuarios necesitan cuenta Google. Email o Apple se añaden después sin tocar el modelo de datos.
+9. **Alta única de Google OAuth** (Google Cloud Console → cliente OAuth → pegarlo en Supabase), explicada paso a paso en el README. Necesita unos 10 minutos tuyos.
+10. **Repo público** en la cuenta personal `marsolermendez` (necesario para Pages gratis); nunca en la cuenta ni las organizaciones de Hike.
+11. **Cada receta tiene quien la creó y solo esa persona la edita.** Los demás la enlazan; su variante la anotan en el relato. "Hacer mi versión" queda fuera del MVP.
+12. **Editar una receta cambia el texto en todas sus entradas** (sin versiones). Si pesa, se añade historial.
+13. **Contadores = veces y personas que *tú* puedes ver** (autores de entradas publicadas visibles; los etiquetados no cuentan como personas). No hay contador global anónimo para no filtrar actividad privada.
+14. **Sin deduplicación:** dos personas que escriben la misma receta por separado crean dos recetas.
+15. **Calendario:** la semana empieza en lunes; los meses se cargan bajo demanda. Los borradores con `planned_for` **no** aparecen en el calendario (no son entradas).
+
+## Fuera del MVP (sin bloquearlo)
+
+- **Mapa:** columnas nulas de lugar en `entries` cuando toque.
+- **Diarios colaborativos / múltiples:** `entry_participants` ya es el primer paso; añadir tabla `diaries` con migración.
+- **Importar desde URL:** `recipe_url` ya existe; función serverless después.
+- **Estadísticas del año:** consultas SQL sobre `entries`.
+- **Push:** PWA + service worker; `planned_for` ya existe.
+- **Borradores compartidos/públicos:** se relaja el `CHECK` y se amplía el enum `visibility`.
+- **Previews al compartir enlaces:** función serverless con Open Graph.
+- **Variantes y fusión de recetas:** `forked_from_recipe_id` (copia con atribución) y "es la misma receta" para unir duplicados.
