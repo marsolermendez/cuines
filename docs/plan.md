@@ -309,7 +309,7 @@ Nunca se usa la `service_role` en el cliente; ningún ID de proyecto va en el c�
 - **Endurecimiento de producción:** auditoría directa de la base de datos (RLS en todas las tablas, `anon` sin privilegios, vista `security_invoker`, bucket `photos` privado). Se cierra la función `rls_auto_enable` que crea el panel de Supabase, invocable por `anon`, y se revoca EXECUTE de las funciones de disparador propias.
 
 **Actividad (después de la Fase 6)**
-- **Nueva pestaña «Actividad» (`/actividad`, icono de campana, entre Inicio y Quiero cocinar):** lista los me gusta y comentarios de otras personas en mis entradas, de más reciente a más antiguo, con enlace a la entrada. Las pestañas pasan de 5 a 6 (caben a 375 px). Las solicitudes de seguir y las etiquetas siguen en Ajustes.
+- **Pantalla «Actividad» (`/actividad`):** lista los me gusta y comentarios de otras personas en mis entradas, de más reciente a más antiguo, con enlace a la entrada. No ocupa pestaña: se abre con una campana (con insignia) arriba a la derecha de Inicio, a la altura del buscador. Las solicitudes de seguir y las etiquetas siguen en Ajustes.
 - **Sin migración ni tabla nueva:** son dos consultas (`likes` y `comments` con `entries!inner` filtrado por mi autoría), mezcladas en el cliente. La RLS de siempre decide qué se lee. Techo: las últimas 30 de cada tipo, sin paginar ni agrupar («A y 3 más»).
 - **«Nuevo» = posterior a mi última visita a Actividad**, y la insignia de la barra cuenta esas. La marca se guarda en `localStorage` (por navegador, no por cuenta en la base de datos): en otro dispositivo cada uno tiene su propio «visto». La primera vez arranca en «ahora», así que no avisa de lo que ya había. Si hace falta sincronizarlo, una columna `activity_seen_at` en `profiles`.
 

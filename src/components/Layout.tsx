@@ -1,8 +1,7 @@
 import { Suspense, useEffect } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { Bell, BookOpen, Bookmark, CirclePlus, Home, Settings } from 'lucide-react'
+import { BookOpen, Bookmark, CirclePlus, Home, Settings } from 'lucide-react'
 import { useMe } from '../features/auth/profiles'
-import { isNew, useActivity, useActivitySeen } from '../features/social/activity'
 import { useFollowRequests } from '../features/social/follows'
 import { useParticipationRequests } from '../features/social/participation'
 import Loading from './Loading'
@@ -11,8 +10,6 @@ import Logo from './Logo'
 export default function Layout() {
   const me = useMe()
   const requests = (useFollowRequests().data?.length ?? 0) + (useParticipationRequests().data?.length ?? 0)
-  const { seen } = useActivitySeen()
-  const news = (useActivity().data ?? []).filter((i) => isNew(i.at, seen)).length
   const { pathname } = useLocation()
   // HashRouter no reinicia el scroll al cambiar de pantalla.
   useEffect(() => {
@@ -20,11 +17,10 @@ export default function Layout() {
   }, [pathname])
   const tabs = [
     { to: '/', label: 'Inicio', icon: Home, end: true },
-    { to: '/actividad', label: 'Actividad', icon: Bell, badge: news, badgeLabel: 'novedades' },
     { to: '/draft', label: 'Quiero cocinar', icon: Bookmark },
     { to: '/new', label: 'Nueva', icon: CirclePlus },
     { to: `/u/${me.username}`, label: 'Mi diario', icon: BookOpen },
-    { to: '/settings', label: 'Ajustes', icon: Settings, badge: requests, badgeLabel: 'solicitudes' },
+    { to: '/settings', label: 'Ajustes', icon: Settings, badge: requests },
   ]
 
   return (
@@ -41,7 +37,7 @@ export default function Layout() {
         <p className="hidden px-3 py-4 text-2xl md:block">
           <Logo />
         </p>
-        {tabs.map(({ to, label, icon: Icon, end, badge, badgeLabel }) => (
+        {tabs.map(({ to, label, icon: Icon, end, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -55,7 +51,7 @@ export default function Layout() {
             <span className="relative">
               <Icon className="size-5" aria-hidden="true" />
               {!!badge && (
-                <span className="absolute -right-2 -top-1 flex size-4 items-center justify-center rounded-full bg-clay text-[10px] font-medium text-on-clay" aria-label={`${badge} ${badgeLabel}`}>
+                <span className="absolute -right-2 -top-1 flex size-4 items-center justify-center rounded-full bg-clay text-[10px] font-medium text-on-clay" aria-label={`${badge} solicitudes`}>
                   {badge}
                 </span>
               )}
