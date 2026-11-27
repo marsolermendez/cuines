@@ -16,6 +16,7 @@ const EntryForm = lazy(() => import('./features/diary/EntryForm'))
 const EntryPage = lazy(() => import('./features/diary/EntryPage'))
 const RecipePage = lazy(() => import('./features/diary/RecipePage'))
 const FeedPage = lazy(() => import('./features/social/FeedPage'))
+const ActivityPage = lazy(() => import('./features/social/ActivityPage'))
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route element={<Layout />}>
             <Route path="/" element={<FeedPage />} />
+            <Route path="/actividad" element={<ActivityPage />} />
             <Route path="/draft" element={<DraftsPage />} />
             <Route path="/draft/new" element={<DraftForm />} />
             <Route path="/draft/:id" element={<DraftForm />} />
